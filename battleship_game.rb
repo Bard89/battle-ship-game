@@ -1,4 +1,5 @@
 require 'httparty'
+require 'byebug'
 require_relative 'config.rb'
 
 class BattleshipGame
@@ -9,28 +10,20 @@ class BattleshipGame
     @options = { headers: { 'Authorization' => "Bearer #{config['user_token']}" } }
   end
 
-  def fire(row, column, avenger)
-    self.class.get("/fire/#{row}/#{column}/avenger/#{avenger}", @options)
-  end
-
-  def test_fire(row, column)
-    self.class.get("/fire/#{row}/#{column}?test=yes", @options)
+  def fire(row, column)
+    self.class.get("/fire/#{row}/#{column}", @options)
   end
 
   def reset
     self.class.get('/reset', @options)
   end
-
-  def test_reset
-    self.class.get('/reset?test=yes', @options)
-  end
-
 end
 
 game = BattleshipGame.new($config)
+byebug
 
-response = game.test_fire(5, 6) # Replace with actual row, column, and avenger name
+response = game.fire(6, 7) # Replace with actual row, column, and avenger name
 puts "Fire Response: #{response}"
 
-# reset_response = game.reset
-# puts "Reset Response: #{reset_response}"
+reset_response = game.reset
+puts "Reset Response: #{reset_response}"
