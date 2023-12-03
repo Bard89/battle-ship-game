@@ -1,7 +1,9 @@
 require_relative 'map_generator.rb'
 require_relative 'helpers.rb'
 require_relative 'constants.rb'
-require_relative 'algos.rb'
+require_relative 'algos/brute_force.rb'
+require_relative 'algos/hunt_and_target.rb'
+require_relative 'algos/probability_density.rb'
 
 require 'byebug'
 require 'set'
