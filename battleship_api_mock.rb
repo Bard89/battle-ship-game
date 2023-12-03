@@ -1,7 +1,7 @@
 require_relative 'map_generator.rb'
 require_relative 'helpers.rb'
 require_relative 'constants.rb'
-require_relative 'algos.rb'
+require_relative 'algos/algos.rb'
 
 require 'byebug'
 require 'set'

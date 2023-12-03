@@ -1,7 +1,7 @@
-require_relative 'map_generator.rb'
-require_relative 'helpers.rb'
-require_relative 'constants.rb'
-require_relative 'battleship_api_mock.rb'
+require_relative '../map_generator.rb'
+require_relative '../helpers.rb'
+require_relative '../constants.rb'
+require_relative '../battleship_api_mock.rb'
 
 require 'byebug'
 
@@ -159,7 +159,9 @@ module Algos
       row, col = highest_probability_cell(probability_grid)
       response = api.fire(row, col)
       update_probability_grid(probability_grid, row, col, response["result"])
-      # Print statements can be added here for debugging
+      puts
+      api.print_probability_grid(probability_grid)
+      puts "move count: #{response["moveCount"]}"
     end
   end
 
@@ -200,7 +202,6 @@ module Algos
       end
     end
 
-    # Normalize probabilities if needed
     normalize_probabilities(grid) if adjustment == :decrease
   end
 

@@ -12,4 +12,23 @@ module Helpers
       puts "#{formatted_row_number} #{row.join('  ')}"
     end
   end
+
+  def print_probability_grid(probability_grid)
+    # Adding column headers (0 to 11) with spacing to match the grid
+    column_headers = '        ' + (0...Constants::GRID_SIZE).map { |n| n.to_s.ljust(4) }.join('  ')
+    puts column_headers
+
+    # Printing each row with its row number
+    probability_grid.each_with_index do |row, index|
+      formatted_row_number = format('Row %-3d', index) # Adjusts the spacing for row numbers
+      formatted_row = row.map { |prob| format_probability(prob) }.join('  ')
+      puts "#{formatted_row_number} #{formatted_row}"
+    end
+  end
+
+  private
+
+  def format_probability(probability)
+    (probability * 100).round(2).to_s.ljust(4)
+  end
 end
