@@ -56,14 +56,14 @@ class MockBattleshipAPI
     parsed_response
   end
 
+  def finished?
+    !@grid.any? { |row| row.include?('S') || row.include?('I') }
+  end
+
   private
 
   def valid_coordinates?(row, column)
     row.between?(0, Constants::GRID_SIZE - 1) && column.between?(0, Constants::GRID_SIZE - 1)
-  end
-
-  def finished?
-    !@grid.any? { |row| row.include?('S') || row.include?('I') }
   end
 end
 
