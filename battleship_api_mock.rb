@@ -48,31 +48,42 @@ class MockBattleshipAPI
           end
         end
 
+        puts
         puts "Placed #{row}, #{col} ship of size #{ship_size}, #{horizontal ? 'horizontal' : 'vertical'}"
-        # print_grid(@grid.flatten.join(''))
+        print_grid(@grid.flatten.join(''))
         placed = true
       end
     end
+
+    puts
+    puts "Final grid:"
     print_grid(@grid.flatten.join(''))
   end
 
+  # Check if the ship can be placed at the given coordinates without overlapping or going out of bounds and with a gap of at least one cell between ships
   def can_place?(row, col, ship_size, horizontal)
-    # Check if the ship can be placed at the given coordinates without overlapping or going out of bounds
     if horizontal
       return false if col + ship_size > GRID_SIZE
-
-      (col...(col + ship_size)).each do |i|
-        return false if @grid[row][i] != '*'
-      end
+      ship_cells = (col...(col + ship_size)).map { |c| [row, c] }
     else
       return false if row + ship_size > GRID_SIZE
-
-      (row...(row + ship_size)).each do |i|
-        return false if @grid[i][col] != '*'
-      end
+      ship_cells = (row...(row + ship_size)).map { |r| [r, col] }
     end
 
-    true
+    surrounding_cells = ship_cells.flat_map do |r, c|
+      [
+        [r - 1, c], [r + 1, c],    # cells above and below
+        [r, c - 1], [r, c + 1],    # cells to the left and right
+        [r - 1, c - 1], [r + 1, c + 1], # diagonal cells
+        [r + 1, c - 1], [r - 1, c + 1]
+      ]
+    end.uniq
+
+    # Check all cells for ship placement and surrounding for gaps
+    (ship_cells + surrounding_cells).all? do |r, c|
+      next true if r < 0 || r >= GRID_SIZE || c < 0 || c >= GRID_SIZE # ignore out of bounds
+      @grid[r][c] == '*'
+    end
   end
 
   def valid_coordinates?(row, column)
@@ -87,7 +98,6 @@ class MockBattleshipAPI
   end
 end
 
-byebug
 MockBattleshipAPI.new
 
 
