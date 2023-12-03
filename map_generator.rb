@@ -1,11 +1,13 @@
 require 'byebug'
+require_relative 'helpers.rb'
+require_relative 'constants.rb'
 
 class MapGenerator
-  GRID_SIZE = 12
-  SHIPS = [4, 3, 3, 2] # Regular ships
+  include Helpers
+  include Constants
 
   def initialize
-    @grid = Array.new(GRID_SIZE) { Array.new(GRID_SIZE, '*') }
+    @grid = Array.new(Constants::GRID_SIZE) { Array.new(Constants::GRID_SIZE, '*') }
     place_ships
   end
 
@@ -24,7 +26,7 @@ class MapGenerator
       placed = false
 
       until placed
-        row, col, horizontal = rand(GRID_SIZE), rand(GRID_SIZE), [true, false].sample
+        row, col, horizontal = rand(Constants::GRID_SIZE), rand(Constants::GRID_SIZE), [true, false].sample
         next unless can_place_regular?(row, col, ship_size, horizontal)
 
         ship_size.times do |i|
@@ -57,7 +59,7 @@ class MapGenerator
 
     placed = false
     until placed
-      row, col = rand(GRID_SIZE - 2), rand(GRID_SIZE - 4) # Adjust for ship size
+      row, col = rand(Constants::GRID_SIZE - 2), rand(Constants::GRID_SIZE - 4) # Adjust for ship size
       ship_shape = [horizontal_ship, vertical_ship].sample
 
       if can_place_whole_ship?(row, col, ship_shape)
@@ -90,10 +92,10 @@ class MapGenerator
   # Check if the ship can be placed at the given coordinates without overlapping or going out of bounds and with a gap of at least one cell between ships
   def can_place_regular?(row, col, ship_size, horizontal)
     if horizontal
-      return false if col + ship_size > GRID_SIZE
+      return false if col + ship_size > Constants::GRID_SIZE
       ship_cells = (col...(col + ship_size)).map { |c| [row, c] }
     else
-      return false if row + ship_size > GRID_SIZE
+      return false if row + ship_size > Constants::GRID_SIZE
       ship_cells = (row...(row + ship_size)).map { |r| [r, col] }
     end
 
@@ -108,7 +110,7 @@ class MapGenerator
 
     # Check all cells for ship placement and surrounding for gaps
     (ship_cells + surrounding_cells).all? do |r, c|
-      next true if r < 0 || r >= GRID_SIZE || c < 0 || c >= GRID_SIZE # ignore out of bounds
+      next true if r < 0 || r >= Constants::GRID_SIZE || c < 0 || c >= Constants::GRID_SIZE # ignore out of bounds
       @grid[r][c] == '*'
     end
   end
@@ -123,18 +125,6 @@ class MapGenerator
   end
 
   def valid_coordinates?(row, column)
-    row.between?(0, GRID_SIZE - 1) && column.between?(0, GRID_SIZE - 1)
-  end
-
-  def print_grid(grid_string)
-    # Adding column headers (0 to 11) with spacing to match the grid
-    column_headers = '        ' + (0...GRID_SIZE).map { |n| n.to_s.ljust(2) }.join(' ')
-    puts column_headers
-
-    # Printing each row with its row number
-    grid_string.chars.each_slice(12).with_index do |row, index|
-      formatted_row_number = format('Row %-3d', index) # Adjusts the spacing for row numbers
-      puts "#{formatted_row_number} #{row.join('  ')}"
-    end
+    row.between?(0, Constants::GRID_SIZE - 1) && column.between?(0, Constants::GRID_SIZE - 1)
   end
 end
