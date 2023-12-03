@@ -1,6 +1,7 @@
 require_relative 'map_generator.rb'
 require_relative 'helpers.rb'
 require_relative 'constants.rb'
+require_relative 'algos.rb'
 
 require 'byebug'
 require 'set'
@@ -28,7 +29,7 @@ class MockBattleshipAPI
 
     # Determine the result of the shot
     cell = @grid[row][column]
-    hit = ['S', 'I'].include?(cell)
+    hit = 'S' == cell
     @grid[row][column] = hit ? 'X' : '.' if cell == '*' || hit
 
     parsed_response(hit)
@@ -55,14 +56,14 @@ class MockBattleshipAPI
     parsed_response
   end
 
+  def finished?
+    !@grid.any? { |row| row.include?('S') || row.include?('I') }
+  end
+
   private
 
   def valid_coordinates?(row, column)
     row.between?(0, Constants::GRID_SIZE - 1) && column.between?(0, Constants::GRID_SIZE - 1)
-  end
-
-  def finished?
-    !@grid.any? { |row| row.include?('S') || row.include?('I') }
   end
 end
 
