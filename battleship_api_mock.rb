@@ -1,6 +1,7 @@
 require_relative 'map_generator.rb'
 require_relative 'helpers.rb'
 require_relative 'constants.rb'
+require_relative 'algos.rb'
 
 require 'byebug'
 require 'set'
@@ -28,7 +29,7 @@ class MockBattleshipAPI
 
     # Determine the result of the shot
     cell = @grid[row][column]
-    hit = ['S', 'I'].include?(cell)
+    hit = 'S' == cell
     @grid[row][column] = hit ? 'X' : '.' if cell == '*' || hit
 
     parsed_response(hit)
