@@ -35,9 +35,9 @@ class MapGenerator
           end
         end
 
-        puts
-        puts "Placed ship n. #{index} on row: #{row}, column: #{col} of size #{ship_size}, #{horizontal ? 'horizontally' : 'vertically'}"
-        print_grid(@grid.flatten.join(''))
+        # puts
+        # puts "Placed ship n. #{index} on row: #{row}, column: #{col} of size #{ship_size}, #{horizontal ? 'horizontally' : 'vertically'}"
+        # print_grid(@grid.flatten.join(''))
         placed = true
       end
     end
@@ -49,9 +49,9 @@ class MapGenerator
 
   def place_irregular_ship
     horizontal_ship = [
-      ['*', 'I', '*', 'I', '*'],
-      ['I', 'I', 'I', 'I', 'I'],
-      ['*', 'I', '*', 'I', '*']
+      ['*', 'S', '*', 'S', '*'],
+      ['S', 'S', 'S', 'S', 'S'],
+      ['*', 'S', '*', 'S', '*']
     ]
     vertical_ship = horizontal_ship.transpose
 
@@ -82,7 +82,7 @@ class MapGenerator
   def place_whole_ship(row, col, ship_shape)
     ship_shape.each_with_index do |ship_row, r|
       ship_row.each_with_index do |cell, c|
-        @grid[row + r][col + c] = cell if cell == 'I'
+        @grid[row + r][col + c] = cell if cell == 'S'
       end
     end
   end
@@ -127,9 +127,14 @@ class MapGenerator
   end
 
   def print_grid(grid_string)
+    # Adding column headers (0 to 11) with spacing to match the grid
+    column_headers = '        ' + (0...GRID_SIZE).map { |n| n.to_s.ljust(2) }.join(' ')
+    puts column_headers
+
+    # Printing each row with its row number
     grid_string.chars.each_slice(12).with_index do |row, index|
-      formatted_row_number = format('Row %-3d:', index) # Adjusts the spacing for row numbers
-      puts "#{formatted_row_number} #{row.join(' ')}"
+      formatted_row_number = format('Row %-3d', index) # Adjusts the spacing for row numbers
+      puts "#{formatted_row_number} #{row.join('  ')}"
     end
   end
 end
