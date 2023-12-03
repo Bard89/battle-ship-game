@@ -4,6 +4,7 @@ require_relative 'config.rb'
 
 class TestBattleshipGame
   include HTTParty
+
   base_uri 'europe-west1-ca-2023-dev.cloudfunctions.net/battleshipsApi'
 
   def initialize(config = {})
