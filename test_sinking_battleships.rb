@@ -20,13 +20,13 @@ def run_algorithm(algorithm, runs)
   total_moves.to_f / runs
 end
 
-runs = 10
+runs = 1
 
-avg_moves_brute_force = run_algorithm(BruteForce.method(:brute_force), runs)
-avg_moves_hunt_and_target = run_algorithm(HuntAndTarget.method(:hunt_and_target), runs)
+# avg_moves_brute_force = run_algorithm(BruteForce.method(:brute_force), runs)
+# avg_moves_hunt_and_target = run_algorithm(HuntAndTarget.method(:hunt_and_target), runs)
 avg_moves_probability_density = run_algorithm(ProbabilityDensity.method(:probability_density), runs)
 
-puts "Average moves (Brute Force): #{avg_moves_brute_force}"
-puts "Average moves (Hunt and Target): #{avg_moves_hunt_and_target}"
+# puts "Average moves (Brute Force): #{avg_moves_brute_force}"
+# puts "Average moves (Hunt and Target): #{avg_moves_hunt_and_target}"
 puts "Average moves (Probability Density): #{avg_moves_probability_density}"
 
