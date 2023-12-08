@@ -6,13 +6,11 @@ class MapGenerator
   include Helpers
   include Constants
 
+  attr_reader :grid
+
   def initialize
     @grid = Array.new(Constants::GRID_SIZE) { Array.new(Constants::GRID_SIZE, '*') }
     place_ships
-  end
-
-  def grid
-    @grid
   end
 
   private
@@ -31,9 +29,9 @@ class MapGenerator
 
         ship_size.times do |i|
           if horizontal
-            @grid[row][col + i] = 'S'
+            grid[row][col + i] = 'S'
           else
-            @grid[row + i][col] = 'S'
+            grid[row + i][col] = 'S'
           end
         end
 
@@ -84,7 +82,7 @@ class MapGenerator
   def place_whole_ship(row, col, ship_shape)
     ship_shape.each_with_index do |ship_row, r|
       ship_row.each_with_index do |cell, c|
-        @grid[row + r][col + c] = cell if cell == 'S'
+        grid[row + r][col + c] = cell if cell == 'S'
       end
     end
   end

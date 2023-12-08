@@ -59,7 +59,7 @@ class MockBattleshipAPI
   end
 
   def finished?
-    !@grid.any? { |row| row.include?('S') || row.include?('I') }
+    !@grid.any? { |row| row.include?('S') }
   end
 
   private
