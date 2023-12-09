@@ -13,12 +13,13 @@ class MockBattleshipAPI
   include Helpers
   include Constants
 
-  attr_reader :move_count, :shots, :grid, :avenger_available
+  attr_reader :move_count, :shots, :grid
 
   def initialize
     @grid = MapGenerator.new.grid
     @shots = Set.new
     @move_count = 0
+    # "avengerAvailable" => false
 
     # unsure what it will return, probably not necessary here, in the real game there is 200 games / maps to play in one go
     # @map_count = 0
@@ -38,7 +39,6 @@ class MockBattleshipAPI
       "result" => hit,
       "moveCount" => move_count,
       "finished" => finished?
-      # "avengerAvailable" => false
     }
 
     puts self.print_grid(parsed_response['grid'])
