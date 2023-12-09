@@ -1,5 +1,10 @@
 require 'httparty'
 require 'byebug'
+
+# beautify responses
+require 'awesome_print'
+require 'json'
+
 require_relative 'helpers.rb'
 require_relative 'config.rb'
 
@@ -23,6 +28,10 @@ class TestBattleshipGame
     self.class.get('/reset?test=yes', @options)
   end
 
+  def test_fire_with_avenger(row, column, avenger)
+    self.class.get("/fire/#{row}/#{column}/avenger/#{avenger}?test=yes", @options)
+  end
+
   # don't use you will waste your api call (200)
   # plus you have it in a separate module
 #   def brute_force
@@ -39,9 +48,16 @@ class TestBattleshipGame
 end
 
 game = TestBattleshipGame.new($config)
+byebug
+# response = game.test_fire(6, 7) # Replace with actual row, column, and avenger name
 
-response = game.test_fire(6, 7) # Replace with actual row, column, and avenger name
+
+# to see the response in a nice format
+ap response.parsed_response
+# to see the current state of the grid
 game.print_grid(response.parsed_response["grid"])
+
+
 # game.brute_force
 
 # reset_response = game.test_reset
