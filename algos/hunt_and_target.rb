@@ -69,7 +69,6 @@ def valid_target?(grid, row, col)
   row.between?(0, Constants::GRID_SIZE - 1) && col.between?(0, Constants::GRID_SIZE - 1) && (grid[row][col] == '*' || grid[row][col] == 'S')
 end
 
-
 # def hunt_and_target(api)
 #   last_hit = nil
 #
