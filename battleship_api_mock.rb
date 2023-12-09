@@ -19,6 +19,9 @@ class MockBattleshipAPI
     @grid = MapGenerator.new.grid
     @shots = Set.new
     @move_count = 0
+
+    # unsure what it will return, probably not necessary here, in the real game there is 200 games / maps to play in one go
+    # @map_count = 0
   end
 
   def fire(row, column)
