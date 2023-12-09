@@ -7,4 +7,5 @@ module Constants
     %w[* S * S *]
   ]
   IRREGULAR_SHIP_VERTICAL = IRREGULAR_SHIP_HORIZONTAL.transpose
+  AVENGERS = %w[hulk, ironman, thor]
 end
