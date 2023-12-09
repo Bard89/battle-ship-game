@@ -16,16 +16,38 @@ class MapGenerator
   private
 
   def place_ships
-    # Place the irregular ship first
+    # Place the irregular ship first ( takes the most space)
     place_irregular_ship
 
     # Place the regular ships after placing the irregular ship
-    SHIPS.each_with_index do |ship_size, index|
+    place_regular_ships
+
+    puts
+    puts "Final grid:"
+    print_grid(@grid.flatten.join(''))
+  end
+
+  def place_irregular_ship
+    placed = false
+
+    until placed
+      row, col = rand(Constants::GRID_SIZE - 2), rand(Constants::GRID_SIZE - 4) # Adjust for ship size
+      ship_shape = [IRREGULAR_SHIP_HORIZONTAL, IRREGULAR_SHIP_VERTICAL].sample
+
+      if can_place_whole_ship?(row, col, ship_shape)
+        place_whole_ship(row, col, ship_shape)
+        placed = true
+      end
+    end
+  end
+
+  def place_regular_ships
+    REGULAR_SHIPS.each_with_index do |ship_size, index|
       placed = false
 
       until placed
         row, col, horizontal = rand(Constants::GRID_SIZE), rand(Constants::GRID_SIZE), [true, false].sample
-        next unless can_place_regular?(row, col, ship_size, horizontal)
+        next unless can_place_regular_ship?(row, col, ship_size, horizontal)
 
         ship_size.times do |i|
           if horizontal
@@ -35,33 +57,11 @@ class MapGenerator
           end
         end
 
+        # uncomment to see the grid after each ship is placed
+        #
         # puts
         # puts "Placed ship n. #{index} on row: #{row}, column: #{col} of size #{ship_size}, #{horizontal ? 'horizontally' : 'vertically'}"
         # print_grid(@grid.flatten.join(''))
-        placed = true
-      end
-    end
-
-    puts
-    puts "Final grid:"
-    print_grid(@grid.flatten.join(''))
-  end
-
-  def place_irregular_ship
-    horizontal_ship = [
-      ['*', 'S', '*', 'S', '*'],
-      ['S', 'S', 'S', 'S', 'S'],
-      ['*', 'S', '*', 'S', '*']
-    ]
-    vertical_ship = horizontal_ship.transpose
-
-    placed = false
-    until placed
-      row, col = rand(Constants::GRID_SIZE - 2), rand(Constants::GRID_SIZE - 4) # Adjust for ship size
-      ship_shape = [horizontal_ship, vertical_ship].sample
-
-      if can_place_whole_ship?(row, col, ship_shape)
-        place_whole_ship(row, col, ship_shape)
         placed = true
       end
     end
@@ -72,10 +72,11 @@ class MapGenerator
       ship_row.each_with_index do |cell, c|
         # Check grid boundaries
         return false unless valid_coordinates?(row + r, col + c)
-        # Check if the cell is already occupied
-        return false if @grid[row + r][col + c] != '*' && cell == 'I'
+        # Check if the cell is already occupied ( can't happen now since we are placing the irregular ship first)
+        return false if @grid[row + r][col + c] != '*' && cell == 'S'
       end
     end
+
     true
   end
 
@@ -88,7 +89,7 @@ class MapGenerator
   end
 
   # Check if the ship can be placed at the given coordinates without overlapping or going out of bounds and with a gap of at least one cell between ships
-  def can_place_regular?(row, col, ship_size, horizontal)
+  def can_place_regular_ship?(row, col, ship_size, horizontal)
     if horizontal
       return false if col + ship_size > Constants::GRID_SIZE
       ship_cells = (col...(col + ship_size)).map { |c| [row, c] }
@@ -120,9 +121,5 @@ class MapGenerator
         [row + row_offset, col + col_offset]
       end
     end
-  end
-
-  def valid_coordinates?(row, column)
-    row.between?(0, Constants::GRID_SIZE - 1) && column.between?(0, Constants::GRID_SIZE - 1)
   end
 end

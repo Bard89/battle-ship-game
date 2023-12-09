@@ -1,7 +1,8 @@
 require_relative '../map_generator.rb'
-require_relative '../helpers.rb'
 require_relative '../constants.rb'
 require_relative '../battleship_api_mock.rb'
+
+include Helpers
 
 require 'byebug'
 
@@ -79,10 +80,6 @@ module ProbabilityDensity
     end
 
     normalize_probabilities(grid) if adjustment == :decrease
-  end
-
-  def valid_coordinates?(row, column)
-    row.between?(0, Constants::GRID_SIZE - 1) && column.between?(0, Constants::GRID_SIZE - 1)
   end
 
   def normalize_probabilities(grid)

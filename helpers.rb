@@ -26,6 +26,10 @@ module Helpers
     end
   end
 
+  def valid_coordinates?(row, column)
+    row.between?(0, Constants::GRID_SIZE - 1) && column.between?(0, Constants::GRID_SIZE - 1)
+  end
+
   private
 
   def format_probability(probability)
