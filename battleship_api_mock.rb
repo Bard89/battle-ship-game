@@ -13,7 +13,7 @@ class MockBattleshipAPI
   include Helpers
   include Constants
 
-  attr_reader :move_count, :shots, :grid
+  attr_reader :move_count, :shots, :grid, :avenger_available
 
   def initialize
     @grid = MapGenerator.new.grid
@@ -38,6 +38,7 @@ class MockBattleshipAPI
       "result" => hit,
       "moveCount" => move_count,
       "finished" => finished?
+      # "avengerAvailable" => false
     }
 
     puts self.print_grid(parsed_response['grid'])

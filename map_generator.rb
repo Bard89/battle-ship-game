@@ -34,8 +34,8 @@ class MapGenerator
       row, col = rand(Constants::GRID_SIZE - 2), rand(Constants::GRID_SIZE - 4) # Adjust for ship size
       ship_shape = [IRREGULAR_SHIP_HORIZONTAL, IRREGULAR_SHIP_VERTICAL].sample
 
-      if can_place_whole_ship?(row, col, ship_shape)
-        place_whole_ship(row, col, ship_shape)
+      if can_place_irregular_ship?(row, col, ship_shape)
+        place_irregular_ship(row, col, ship_shape)
         placed = true
       end
     end
@@ -67,7 +67,7 @@ class MapGenerator
     end
   end
 
-  def can_place_whole_ship?(row, col, ship_shape)
+  def can_place_irregular_ship?(row, col, ship_shape)
     ship_shape.each_with_index do |ship_row, r|
       ship_row.each_with_index do |cell, c|
         # Check grid boundaries
@@ -80,7 +80,7 @@ class MapGenerator
     true
   end
 
-  def place_whole_ship(row, col, ship_shape)
+  def place_irregular_ship(row, col, ship_shape)
     ship_shape.each_with_index do |ship_row, r|
       ship_row.each_with_index do |cell, c|
         grid[row + r][col + c] = cell if cell == 'S'

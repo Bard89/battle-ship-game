@@ -25,6 +25,7 @@ def run_algorithm(algorithm, runs)
   [total_moves, average_moves, average_time, total_time]
 end
 
+# in the end change this to 200 runs to simulate the real game
 runs = 2
 
 total_moves_brute_force, avg_moves_brute_force, time_brute_force, total_time_brute_force = run_algorithm(BruteForce.method(:brute_force), runs)
