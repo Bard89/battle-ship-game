@@ -32,6 +32,10 @@ class TestBattleshipGame
     self.class.get("/fire/#{row}/#{column}/avenger/#{avenger}?test=yes", @options)
   end
 
+  def test_status
+    self.class.get("/fire?test=yes", @options)
+  end
+
   # don't use you will waste your api call (200)
   # plus you have it in a separate module
 #   def brute_force
@@ -49,11 +53,14 @@ end
 
 game = TestBattleshipGame.new($config)
 byebug
-# response = game.test_fire(6, 7) # Replace with actual row, column, and avenger name
-
-
+# response = game.test_fire(6, 7)
+# response = game.test_fire_with_avenger(6, 7, 'hulk')
+# response = game.test_reset
+# response = game.test_status
+#
 # to see the response in a nice format
-ap response.parsed_response
+# ap response.parsed_response
+
 # to see the current state of the grid
 game.print_grid(response.parsed_response["grid"])
 
