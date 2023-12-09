@@ -7,5 +7,6 @@ module Constants
     %w[* S * S *]
   ]
   IRREGULAR_SHIP_VERTICAL = IRREGULAR_SHIP_HORIZONTAL.transpose
+  CURRENT_BEST_200_GAMES_RUN = 9657 # check periodically on https://www.panaxeo.com/coding-arena#api
   AVENGERS = %w[hulk, ironman, thor]
 end
