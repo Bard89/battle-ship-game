@@ -22,44 +22,28 @@ class MockBattleshipAPI
   end
 
   def fire(row, column)
-    # Validate the coordinates
     return { "error" => "Invalid coordinates" } unless valid_coordinates?(row, column)
 
-    # Register the shot
-    shot_key = [row, column]
-    @move_count += 1 if @shots.add?(shot_key)
-
-    # Determine the result of the shot
-    cell = @grid[row][column]
-    hit = 'S' == cell
-    @grid[row][column] = hit ? 'X' : '.' if cell == '*' || hit
-
-    parsed_response(hit)
-  end
-
-  def reset
-    @grid = MapGenerator.new
-    @shots.clear
-    @move_count = 0
+    count_shot(row, column)
+    process_shot_result(row, column)
   end
 
   def parsed_response(hit)
     parsed_response = {
-      "grid" => @grid.flatten.join,
+      "grid" => grid.flatten.join,
       "cell" => hit ? 'X' : '',
       "result" => hit,
-      "moveCount" => @move_count,
+      "moveCount" => move_count,
       "finished" => finished?
     }
 
-    # just help for me when I debug to see the grid
     puts self.print_grid(parsed_response['grid'])
 
     parsed_response
   end
 
   def finished?
-    !@grid.any? { |row| row.include?('S') }
+    !grid.any? { |row| row.include?('S') }
   end
 
   private
@@ -67,9 +51,26 @@ class MockBattleshipAPI
   def valid_coordinates?(row, column)
     row.between?(0, Constants::GRID_SIZE - 1) && column.between?(0, Constants::GRID_SIZE - 1)
   end
-end
 
-api = MockBattleshipAPI.new
+  def count_shot(row, column)
+    @move_count += 1 if shots.add?([row, column])
+  end
+
+  def process_shot_result(row, column)
+    cell = grid[row][column]
+    hit = cell == 'S'
+
+    update_grid_for_shot(row, column, hit)
+
+    parsed_response(hit)
+  end
+
+  def update_grid_for_shot(row, column, hit)
+    if hit || grid[row][column] == '*'
+      grid[row][column] = hit ? 'X' : '.'
+    end
+  end
+end
 
 
 
