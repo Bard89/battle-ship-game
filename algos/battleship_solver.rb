@@ -49,13 +49,13 @@ module BattleshipSolver
 
   # Increase probability for cells where the irregular ship can be placed
   def increase_probability_for_irregular_ship(grid, row, col, increment)
-    update_probability_for_ship_position(grid, row, col, IRREGULAR_SHIP_HORIZONTAL, increment) if can_whole_ship_be_here?(row, col, IRREGULAR_SHIP_HORIZONTAL)
-    # update_probability_for_ship_position(grid, row, col, transposed_ship_shape, increment) if can_whole_ship_be_here?(row, col)#, transposed_ship_shape)
+    update_probability_for_horizontal_ship_position(grid, row, col, IRREGULAR_SHIP_HORIZONTAL, increment) if can_whole_horizontal_ship_be_here?(row, col)
+    update_probability_for_vertical_ship_position(grid, row, col, IRREGULAR_SHIP_VERTICAL, increment) if can_whole_vertical_ship_be_here?(row, col)
   end
 
-  def can_whole_ship_be_here?(row, col, ship_shape)
-    half_length_of_the_ship =  ship_shape[0].length / 2 # columns
-    half_width_of_the_ship = ship_shape.length / 2 # rows
+  def can_whole_horizontal_ship_be_here?(row, col)
+    half_length_of_the_ship =  IRREGULAR_SHIP_HORIZONTAL[0].length / 2 # columns
+    half_width_of_the_ship = IRREGULAR_SHIP_HORIZONTAL.length / 2 # rows
 
     return false if col - half_length_of_the_ship < 0
     return false if col + half_length_of_the_ship > Constants::GRID_SIZE - 1
@@ -65,13 +65,38 @@ module BattleshipSolver
     true
   end
 
-  def update_probability_for_ship_position(grid, row, col, ship_shape, increment)
+  def can_whole_vertical_ship_be_here?(row, col)
+    half_length_of_the_ship =  IRREGULAR_SHIP_VERTICAL[0].length / 2 # columns
+    half_width_of_the_ship = IRREGULAR_SHIP_VERTICAL.length / 2 # rows
+
+    return false if col - half_length_of_the_ship < 0
+    return false if col + half_length_of_the_ship > Constants::GRID_SIZE - 1
+    return false if row - half_width_of_the_ship < 0
+    return false if row + half_width_of_the_ship > Constants::GRID_SIZE - 1
+
+    true
+  end
+
+  def update_probability_for_horizontal_ship_position(grid, row, col, ship_shape, increment)
     ship_shape.each_with_index do |ship_row, r_offset|
       ship_row.each_with_index do |cell, c_offset|
         next unless cell == 'I' # Only consider the 'I' cells of the ship
 
         grid_row = row + r_offset - 1
         grid_col = col + c_offset - 2
+
+        grid[grid_row][grid_col] += increment
+      end
+    end
+  end
+
+  def update_probability_for_vertical_ship_position(grid, row, col, ship_shape, increment)
+    ship_shape.each_with_index do |ship_row, r_offset|
+      ship_row.each_with_index do |cell, c_offset|
+        next unless cell == 'I' # Only consider the 'I' cells of the ship
+
+        grid_row = row + r_offset - 2
+        grid_col = col + c_offset - 1
 
         grid[grid_row][grid_col] += increment
       end
@@ -95,7 +120,7 @@ module BattleshipSolver
       Constants::GRID_SIZE.times do |row|
         Constants::GRID_SIZE.times do |col|
           # next unless can_place_whole_irregular_ship?(row, col, ship_shape)
-          next unless can_irregular_ship_be_here?(row, col)
+          next unless can_whole_ship_be_here?(row, col)
 
           # byebug
           # puts "row: #{row}, col: #{col}"
