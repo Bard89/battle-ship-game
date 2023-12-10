@@ -1,17 +1,46 @@
 require_relative 'constants.rb'
 
 module Helpers
+  def color_for_ship(cell)
+    case cell
+    when 'I' # Irregular ship
+      "\e[31mI\e[0m" # Red
+    when 'S' # Regular ship
+      # red orange
+      "\e[38;5;208mS\e[0m"
+    when 'X' # shot
+      # blue
+      "\e[38;5;33mX\e[0m"
+    else
+      cell # No color for other cells
+    end
+  end
+
   def print_grid(grid_string)
     # Adding column headers (0 to 11) with spacing to match the grid
     column_headers = '        ' + (0...Constants::GRID_SIZE).map { |n| n.to_s.ljust(2) }.join(' ')
     puts column_headers
 
     # Printing each row with its row number
-    grid_string.chars.each_slice(12).with_index do |row, index|
+    grid_string.chars.each_slice(Constants::GRID_SIZE).with_index do |row, index|
       formatted_row_number = format('Row %-3d', index) # Adjusts the spacing for row numbers
-      puts "#{formatted_row_number} #{row.join('  ')}"
+      colored_row = row.map { |cell| color_for_ship(cell) }.join('  ') # Apply color to ships
+      puts "#{formatted_row_number} #{colored_row}"
     end
   end
+
+
+  # def print_grid(grid_string)
+  #   # Adding column headers (0 to 11) with spacing to match the grid
+  #   column_headers = '        ' + (0...Constants::GRID_SIZE).map { |n| n.to_s.ljust(2) }.join(' ')
+  #   puts column_headers
+  #
+  #   # Printing each row with its row number
+  #   grid_string.chars.each_slice(12).with_index do |row, index|
+  #     formatted_row_number = format('Row %-3d', index) # Adjusts the spacing for row numbers
+  #     puts "#{formatted_row_number} #{row.join('  ')}"
+  #   end
+  # end
 
   # def print_probability_grid(probability_grid)
   #   # Adding column headers (0 to 11) with spacing to match the grid
