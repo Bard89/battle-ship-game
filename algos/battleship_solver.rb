@@ -42,34 +42,18 @@ module BattleshipSolver
   def update_grid_with_irregular_ship_probabilities(grid)
     Constants::GRID_SIZE.times do |row|
       Constants::GRID_SIZE.times do |col|
-        # Increase probability if the irregular ship can be placed here
-        # byebug if col == 11
-        # if can_irregular_ship_be_here?(row, col)
-          # Adjust the increment value as needed based on your game strategy
-          increase_probability_for_irregular_ship(grid, row, col, 0.01)
-        # end
+        increase_probability_for_irregular_ship(grid, row, col, 0.01)
       end
     end
   end
 
   # Increase probability for cells where the irregular ship can be placed
   def increase_probability_for_irregular_ship(grid, row, col, increment)
-    # Define the shape of the irregular ship (same as in can_irregular_ship_be_here?)
-    ship_shape = [
-      [nil, 'I', nil, 'I', nil],
-      ['I', 'I', 'I', 'I', 'I'],
-      [nil, 'I', nil, 'I', nil]
-    ]
-    transposed_ship_shape = ship_shape.transpose
-    update_probability_for_ship_position(grid, row, col, ship_shape, increment) if can_whole_ship_be_here?(row, col, ship_shape)
+    update_probability_for_ship_position(grid, row, col, IRREGULAR_SHIP_HORIZONTAL, increment) if can_whole_ship_be_here?(row, col, IRREGULAR_SHIP_HORIZONTAL)
     # update_probability_for_ship_position(grid, row, col, transposed_ship_shape, increment) if can_whole_ship_be_here?(row, col)#, transposed_ship_shape)
   end
 
   def can_whole_ship_be_here?(row, col, ship_shape)
-    # udelam to tak, ze se podivam do stredu lodi
-    # kdyz se tam vejde tak updatu pravdepodobnosti podle toho kde budou ty bunky ty lodi v gridu
-    # kdyz se tam nevejde tak se posunu na dalsi soupec / radek
-
     half_length_of_the_ship =  ship_shape[0].length / 2 # columns
     half_width_of_the_ship = ship_shape.length / 2 # rows
 
@@ -93,19 +77,6 @@ module BattleshipSolver
       end
     end
   end
-
-
-  # def update_probability_for_ship_position(grid, row, col, ship_shape, increment)
-  #
-  #   byebug
-  #   (col - 2..col + 2).each do |r|
-  #     (row - 1..row + 1).each do |c|
-  #       next unless ship_shape[row - 1 + r][col - 2 + c] == 'I' # Only consider the 'I' cells of the ship
-  #
-  #       grid[r][c] += increment
-  #     end
-  #   end
-  # end
 
   # Update the probability grid based on the result of each shot
   def update_probability(probability_grid, row, col, hit)
@@ -174,51 +145,6 @@ module BattleshipSolver
     end
 
     score
-  end
-
-  def can_irregular_ship_be_here?(row, col)
-    # Define the shape of the irregular ship
-    ship_shape = [
-      [nil, 'I', nil, 'I', nil],
-      ['I', 'I', 'I', 'I', 'I'],
-      [nil, 'I', nil, 'I', nil]
-    ]
-    transposed_ship_shape = ship_shape.transpose
-
-    # Check both original and transposed shapes
-    [ship_shape, transposed_ship_shape].any? do |shape|
-
-      shape.each_with_index do |ship_row, r|
-        ship_row.each_with_index do |cell, c|
-          next unless cell == 'I' # Only consider the 'I' cells of the ship
-
-          # Calculate the actual position on the grid
-          grid_row = row + r - 1
-          grid_col = col + c - 1
-          return false unless valid_coordinates?(grid_row, grid_col)
-
-          # grid_row = row + r - 1
-          # grid_col = col + c + 1
-          # return false unless valid_coordinates?(grid_row, grid_col)
-          #
-          # grid_row = row + r + 1
-          # grid_col = col + c - 1
-          # return false unless valid_coordinates?(grid_row, grid_col)
-
-          # grid_row = row + r - 0
-          # grid_col = col + c - 0
-          # return false unless valid_coordinates?(grid_row, grid_col)
-
-          # # Check if the 'I' cell of the ship can be placed on the grid
-          # unless valid_coordinates?(grid_row, grid_col)
-          #   return false # 'I' cell is out of grid boundaries
-          # end
-        end
-      end
-
-      true
-
-    end
   end
 
   def find_highest_probability_target(probability_grid)
