@@ -1,6 +1,7 @@
 require_relative '../map_generator.rb'
 require_relative '../constants.rb'
 require_relative '../battleship_api_mock.rb'
+require_relative 'solver_helpers.rb'
 require 'byebug'
 
 module BattleshipSolver
@@ -14,21 +15,26 @@ module BattleshipSolver
     update_grid_with_irregular_ship_probabilities(probability_grid) # Initialize probabilities for irregular ship
 
     api.print_probability_grid(probability_grid)
-    byebug
+    targeted_cells = Set.new
 
-    until api.finished? # until the game is over
-      if api.avengerAvailable # if the biggest ship is sunk, use the avenger
-        target_row, target_col = find_highest_probability_target(probability_grid)
-      else
-        target_row, target_col = target_irregular_ship(probability_grid)
-      end
+    # until api.finished? # until the game is over
+
+    # just to optimize the game, to update the probabilities right
+    until api.avengerAvailable
+      # if api.avengerAvailable # if the biggest ship is sunk, use the avenger
+      #   target_row, target_col = find_highest_probability_target(probability_grid)
+      # else
+        target_row, target_col = target_irregular_ship(probability_grid, targeted_cells)
+      # end
 
       puts
       puts "Targeting row #{target_row}, col #{target_col}"
-
+      targeted_cells.add([target_row, target_col])
       result = api.fire(target_row, target_col)
-      hit = result['result']
-      update_probability(probability_grid, target_row, target_col, hit)
+
+      update_probability(probability_grid, target_row, target_col, result['result'])
+
+      api.print_probability_grid(probability_grid)
     end
   end
 
@@ -88,34 +94,55 @@ module BattleshipSolver
     end
   end
 
-  # Update the probability grid based on the result of each shot
+  # def update_probability(probability_grid, row, col, hit)
+  #   action = hit ? :increase : :decrease
+  #
+  #   update_adjacent_cells(probability_grid, row, col, action)
+  #   # normalize_probabilities(probability_grid)
+  # end
+
   def update_probability(probability_grid, row, col, hit)
     action = hit ? :increase : :decrease
-
     update_adjacent_cells(probability_grid, row, col, action)
-    normalize_probabilities(probability_grid)
+
+    # If it's a hit, also consider ship placement patterns
+    if hit
+      update_based_on_ship_patterns(probability_grid, row, col)
+    end
   end
 
+
   # Target the irregular ship based on the probability grid
-  def target_irregular_ship(probability_grid)
+  # def target_irregular_ship(probability_grid)
+  #   highest_probability = 0
+  #   target_position = [0, 0]
+  #
+  #   [IRREGULAR_SHIP_HORIZONTAL, IRREGULAR_SHIP_VERTICAL].each do |ship_shape|
+  #     Constants::GRID_SIZE.times do |row|
+  #       Constants::GRID_SIZE.times do |col|
+  #         next unless can_whole_ship_be_here?(row, col, ship_shape)
+  #
+  #         probability_score = calculate_probability_score(probability_grid, row, col, ship_shape)
+  #         if probability_score > highest_probability
+  #           highest_probability = probability_score
+  #           target_position = [row, col]
+  #         end
+  #       end
+  #     end
+  #   end
+  #
+  #   target_position
+  # end
+
+  def target_irregular_ship(probability_grid, targeted_cells)
     highest_probability = 0
     target_position = [0, 0]
 
-    [IRREGULAR_SHIP_HORIZONTAL, IRREGULAR_SHIP_VERTICAL].each do |ship_shape|
-      Constants::GRID_SIZE.times do |row|
-        Constants::GRID_SIZE.times do |col|
-          # next unless can_place_whole_irregular_ship?(row, col, ship_shape)
-          next unless can_whole_ship_be_here?(row, col,ship_shape)
-
-          # byebug
-          # puts "row: #{row}, col: #{col}"
-          # byebug if can_irregular_ship_be_here?(row, col)
-
-          probability_score = calculate_probability_score(probability_grid, row, col, ship_shape)
-          if probability_score > highest_probability
-            highest_probability = probability_score
-            target_position = [row, col]
-          end
+    probability_grid.each_with_index do |row, r_idx|
+      row.each_with_index do |prob, c_idx|
+        if prob > highest_probability && !targeted_cells.include?([r_idx, c_idx])
+          highest_probability = prob
+          target_position = [r_idx, c_idx]
         end
       end
     end
@@ -123,25 +150,57 @@ module BattleshipSolver
     target_position
   end
 
+
+  # def update_adjacent_cells(probability_grid, row, col, action)
+  #   (-1..1).each do |row_offset|
+  #     (-1..1).each do |col_offset|
+  #       next unless valid_coordinates?(row + row_offset, col + col_offset)
+  #
+  #       case action
+  #       when :increase
+  #         probability_grid[row + row_offset][col + col_offset] += 0.1 # Adjust this value as needed
+  #       when :decrease
+  #         probability_grid[row + row_offset][col + col_offset] -= 0.1 # Adjust this value as needed
+  #       end
+  #     end
+  #   end
+  # end
+
   def update_adjacent_cells(probability_grid, row, col, action)
     (-1..1).each do |row_offset|
       (-1..1).each do |col_offset|
         next unless valid_coordinates?(row + row_offset, col + col_offset)
+        next if row_offset == 0 && col_offset == 0  # Skip the cell that was just targeted
 
         case action
         when :increase
-          probability_grid[row + row_offset][col + col_offset] += 0.1 # Adjust this value as needed
+          probability_grid[row + row_offset][col + col_offset] += 0.1
         when :decrease
-          probability_grid[row + row_offset][col + col_offset] -= 0.1 # Adjust this value as needed
+          probability_grid[row + row_offset][col + col_offset] -= 0.1
         end
       end
     end
   end
 
-  def normalize_probabilities(probability_grid)
-    total = probability_grid.flatten.sum
-    probability_grid.map! { |row| row.map { |prob| prob / total } }
+  def update_based_on_ship_patterns(probability_grid, row, col)
+    # Example: Increase probability of cells in a line extending from the hit cell
+    # This is a simplified example and should be refined based on your game's ship sizes and rules
+    [-1, 1].each do |offset|
+      if valid_coordinates?(row + offset, col)
+        probability_grid[row + offset][col] += 0.2
+      end
+      if valid_coordinates?(row, col + offset)
+        probability_grid[row][col + offset] += 0.2
+      end
+    end
   end
+
+
+
+  # def normalize_probabilities(probability_grid)
+  #   total = probability_grid.flatten.sum
+  #   probability_grid.map! { |row| row.map { |prob| prob / total } }
+  # end
 
   def calculate_probability_score(probability_grid, row, col, ship_shape)
     score = 0
