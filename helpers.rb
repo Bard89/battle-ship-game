@@ -91,12 +91,17 @@ module Helpers
   def print_probability_grid(probability_grid)
     max_prob = probability_grid.flatten.max
     min_prob = probability_grid.flatten.min
-    column_headers = '        ' + (0...Constants::GRID_SIZE).map { |n| n.to_s.ljust(4) }.join('  ')
+
+    # Adjust the headers to be centered over 5 characters
+    column_headers = ' ' * 9 + (0...Constants::GRID_SIZE).map { |n| n.to_s.center(5) }.join(' ')
     puts column_headers
 
     probability_grid.each_with_index do |row, index|
       formatted_row_number = format('Row %-3d', index) # Adjusts the spacing for row numbers
-      formatted_row = row.map { |prob| "#{color_for_probability(prob, min_prob, max_prob)}#{'%.1f' % prob}\e[0m" }.join('  ')
+      formatted_row = row.map do |prob|
+        formatted_prob = format("%+5.1f", prob) # Ensure the number takes up 5 spaces including the sign
+        "#{color_for_probability(prob, min_prob, max_prob)}#{formatted_prob}\e[0m"
+      end.join(' ')
       puts "#{formatted_row_number} #{formatted_row}"
     end
   end
