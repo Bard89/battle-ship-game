@@ -28,14 +28,18 @@ module BattleshipSolver
         target_row, target_col = target_irregular_ship(probability_grid, targeted_cells)
       # end
 
-      puts
-      puts "Targeting row #{target_row}, col #{target_col}"
-      targeted_cells.add([target_row, target_col])
-      result = api.fire(target_row, target_col)
+        if targeted_cells.include?([target_row, target_col])
+          raise "Already targeted cell #{target_row}, #{target_col}"
+        end
 
-      update_probability(probability_grid, target_row, target_col, result['result'])
+        puts
+        puts "Targeting row #{target_row}, col #{target_col}"
+        targeted_cells.add([target_row, target_col])
 
-      api.print_probability_grid(probability_grid)
+        result = api.fire(target_row, target_col)
+        update_probability(probability_grid, target_row, target_col, result['result'])
+
+        api.print_probability_grid(probability_grid)
     end
   end
 
@@ -103,21 +107,26 @@ module BattleshipSolver
     update_based_on_ship_patterns(probability_grid, row, col) if hit
   end
 
-  def target_irregular_ship(probability_grid, targeted_cells)
-    highest_probability = 0
-    target_position = [0, 0]
+def target_irregular_ship(probability_grid, targeted_cells)
+  highest_probability = -Float::INFINITY
+  target_position = [-1, -1]
 
-    probability_grid.each_with_index do |row, r_idx|
-      row.each_with_index do |prob, c_idx|
-        if prob > highest_probability && !targeted_cells.include?([r_idx, c_idx])
-          highest_probability = prob
-          target_position = [r_idx, c_idx]
-        end
+  probability_grid.each_with_index do |row, r_idx|
+    row.each_with_index do |prob, c_idx|
+      cell_position = [r_idx, c_idx]
+      if prob > highest_probability && !targeted_cells.include?(cell_position)
+        highest_probability = prob
+        target_position = cell_position
       end
     end
-
-    target_position
   end
+
+  if target_position == [-1, -1]
+    raise "No valid target found. All cells may have been targeted."
+  end
+
+  target_position
+end
 
 
   def update_adjacent_cells(probability_grid, row, col, action)
