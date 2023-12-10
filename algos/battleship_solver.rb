@@ -1,64 +1,117 @@
 require_relative '../map_generator.rb'
 require_relative '../constants.rb'
 require_relative '../battleship_api_mock.rb'
+require_relative 'solver_helpers.rb'
 require 'byebug'
 
 module BattleshipSolver
   include Helpers
   include Constants
+  include SolverHelpers
 
   module_function
 
   def probability_density(api)
     probability_grid = initialize_probability_grid
-    game_over = false
+    update_grid_with_irregular_ship_probabilities(probability_grid) # Initialize probabilities for irregular ship
 
-    until api.finished? # until the game is over
-      if api.avengerAvailable # if the biggest ship is sunk, use the avenger
-        target_row, target_col = find_highest_probability_target(probability_grid)
-      else
-        target_row, target_col = target_irregular_ship(probability_grid)
-      end
+    api.print_probability_grid(probability_grid)
+    targeted_cells = Set.new
+
+    # until api.finished? # until the game is over
+
+    # just to optimize the game, to update the probabilities right
+    until api.avengerAvailable
+      # if api.avengerAvailable # if the biggest ship is sunk, use the avenger
+      #   target_row, target_col = find_highest_probability_target(probability_grid)
+      # else
+        target_row, target_col = target_irregular_ship(probability_grid, targeted_cells)
+      # end
 
       puts
       puts "Targeting row #{target_row}, col #{target_col}"
-
+      targeted_cells.add([target_row, target_col])
       result = api.fire(target_row, target_col)
-      hit = result['result']
-      update_probability(probability_grid, target_row, target_col, hit)
+
+      update_probability(probability_grid, target_row, target_col, result['result'])
+
+      api.print_probability_grid(probability_grid)
     end
   end
 
-  # Initialize the probability grid for the game
+  # Initialize the probability grid for the game with 0s, will be updated according to the ship shapes
+  # first for the irregular ship and then for the regular ships
   def initialize_probability_grid
-    Array.new(Constants::GRID_SIZE) { Array.new(Constants::GRID_SIZE, 1.0 / (Constants::GRID_SIZE * Constants::GRID_SIZE)) }
+    Array.new(Constants::GRID_SIZE) { Array.new(Constants::GRID_SIZE, 0.0) }
   end
 
-  # Update the probability grid based on the result of each shot
+  # Updates the probability grid with probabilities of the irregular ship's placement
+  def update_grid_with_irregular_ship_probabilities(grid)
+    Constants::GRID_SIZE.times do |row|
+      Constants::GRID_SIZE.times do |col|
+        increase_probability_for_irregular_ship(grid, row, col, 0.01)
+      end
+    end
+  end
+
+  # Increase probability for cells where the irregular ship can be placed
+  def increase_probability_for_irregular_ship(grid, row, col, increment)
+    if can_whole_ship_be_here?(row, col, IRREGULAR_SHIP_HORIZONTAL)
+      update_probability_for_ship_position(grid, row, col, IRREGULAR_SHIP_HORIZONTAL, increment, :horizontal)
+    end
+
+    if can_whole_ship_be_here?(row, col, IRREGULAR_SHIP_VERTICAL)
+      update_probability_for_ship_position(grid, row, col, IRREGULAR_SHIP_VERTICAL, increment, :vertical)
+    end
+  end
+
+  def can_whole_ship_be_here?(row, col, ship_shape)
+    half_length_of_the_ship =  ship_shape[0].length / 2 # columns
+    half_width_of_the_ship = ship_shape.length / 2 # rows
+
+    return false if col - half_length_of_the_ship < 0
+    return false if col + half_length_of_the_ship > Constants::GRID_SIZE - 1
+    return false if row - half_width_of_the_ship < 0
+    return false if row + half_width_of_the_ship > Constants::GRID_SIZE - 1
+
+    true
+  end
+
+  def update_probability_for_ship_position(grid, row, col, ship_shape, increment, orientation)
+    ship_shape.each_with_index do |ship_row, r_offset|
+      ship_row.each_with_index do |cell, c_offset|
+        next unless cell == 'I' # Only consider the 'I' cells of the ship
+
+        if orientation == :horizontal
+          grid_row = row + r_offset - 1 # Centering adjustment for horizontal
+          grid_col = col + c_offset - 2 # Centering adjustment for horizontal
+        elsif orientation == :vertical
+          grid_row = row + r_offset - 2 # Centering adjustment for vertical
+          grid_col = col + c_offset - 1 # Centering adjustment for vertical
+        end
+
+        grid[grid_row][grid_col] += increment
+      end
+    end
+  end
+
   def update_probability(probability_grid, row, col, hit)
     action = hit ? :increase : :decrease
-
     update_adjacent_cells(probability_grid, row, col, action)
-    normalize_probabilities(probability_grid)
+
+    # If it's a hit, also consider ship placement patterns
+    update_based_on_ship_patterns(probability_grid, row, col) if hit
   end
 
-  # Target the irregular ship based on the probability grid
-  def target_irregular_ship(probability_grid)
+  def target_irregular_ship(probability_grid, targeted_cells)
     highest_probability = 0
     target_position = [0, 0]
 
-    [IRREGULAR_SHIP_HORIZONTAL, IRREGULAR_SHIP_VERTICAL].each do |ship_shape|
-      Constants::GRID_SIZE.times do |row|
-        Constants::GRID_SIZE.times do |col|
-          # next unless can_place_whole_irregular_ship?(row, col, ship_shape)
-          byebug
-          next unless can_irregular_ship_be_here?(row, col)
-
-          probability_score = calculate_probability_score(probability_grid, row, col, ship_shape)
-          if probability_score > highest_probability
-            highest_probability = probability_score
-            target_position = [row, col]
-          end
+    probability_grid.each_with_index do |row, r_idx|
+      row.each_with_index do |prob, c_idx|
+        if prob > highest_probability && !targeted_cells.include?([r_idx, c_idx])
+          highest_probability = prob
+          target_position = [r_idx, c_idx]
         end
       end
     end
@@ -66,76 +119,29 @@ module BattleshipSolver
     target_position
   end
 
+
   def update_adjacent_cells(probability_grid, row, col, action)
     (-1..1).each do |row_offset|
       (-1..1).each do |col_offset|
         next unless valid_coordinates?(row + row_offset, col + col_offset)
+        next if row_offset == 0 && col_offset == 0  # Skip the cell that was just targeted
 
         case action
         when :increase
-          probability_grid[row + row_offset][col + col_offset] += 0.1 # Adjust this value as needed
+          probability_grid[row + row_offset][col + col_offset] += 0.1
         when :decrease
-          probability_grid[row + row_offset][col + col_offset] -= 0.1 # Adjust this value as needed
+          probability_grid[row + row_offset][col + col_offset] -= 0.1
         end
       end
     end
   end
 
-  def normalize_probabilities(probability_grid)
-    total = probability_grid.flatten.sum
-    probability_grid.map! { |row| row.map { |prob| prob / total } }
-  end
-
-  def calculate_probability_score(probability_grid, row, col, ship_shape)
-    score = 0
-
-    ship_shape.each_with_index do |ship_row, r|
-      ship_row.each_with_index do |cell, c|
-        next unless cell == 'I' # Only consider the 'I' cells for the irregular ship
-
-        score += probability_grid[row + r][col + c] if valid_coordinates?(row + r, col + c)
-      end
+  def update_based_on_ship_patterns(probability_grid, row, col)
+    # Increase probability of cells in a line extending from the hit cell
+    [-1, 1].each do |offset|
+      probability_grid[row + offset][col] += 0.2 if valid_coordinates?(row + offset, col)
+      probability_grid[row][col + offset] += 0.2 if valid_coordinates?(row, col + offset)
     end
-
-    score
-  end
-
-  # def can_place_whole_irregular_ship?(row, col, ship_shape)
-  #   ship_shape.each_with_index do |ship_row, r|
-  #     ship_row.each_with_index do |cell, c|
-  #       byebug
-  #       next unless cell == 'I' # Only consider the 'I' cells
-  #
-  #       return false unless valid_coordinates?(row + r, col + c)
-  #     end
-  #   end
-  #
-  #   true
-  # end
-
-  def can_irregular_ship_be_here?(row, col)#, grid)
-    ship_shape = [
-      [nil, 'I', nil, 'I', nil],
-      ['I', 'I', 'I', 'I', 'I'],
-      [nil, 'I', nil, 'I', nil],
-    ]
-
-    ship_shape.each_with_index do |ship_row, r|
-      ship_row.each_with_index do |cell, c|
-        next unless cell == 'I' # Only consider the 'I' cells of the ship
-
-        # Calculate the actual position on the grid
-        grid_row = row + r - 1 # Offset by 1 to center the ship shape on the specified position
-        grid_col = col + c - 1 # Offset by 1 to center the ship shape on the specified position
-
-        # Check if the 'I' cell of the ship can be placed on the grid
-        unless valid_coordinates?(grid_row, grid_col)# && grid[grid_row][grid_col] == '*'
-          return false # 'I' cell is out of grid boundaries or overlaps with an existing ship
-        end
-      end
-    end
-
-    true # All 'I' cells can be placed
   end
 
   def find_highest_probability_target(probability_grid)
