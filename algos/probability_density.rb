@@ -1,9 +1,6 @@
 require_relative '../map_generator.rb'
 require_relative '../constants.rb'
 require_relative '../battleship_api_mock.rb'
-
-include Helpers
-
 require 'byebug'
 
 module ProbabilityDensity
@@ -11,19 +8,6 @@ module ProbabilityDensity
   include Constants
 
   module_function
-
-  # def probability_density(api)
-  #   probability_grid = initialize_probability_grid
-  #   until api.finished?
-  #     row, col = highest_probability_cell(probability_grid)
-  #     response = api.fire(row, col)
-  #     update_probability_grid(probability_grid, row, col, response["result"])
-  #     puts
-  #     api.print_probability_grid(probability_grid)
-  #     puts "move count: #{response["moveCount"]}"
-  #   end
-  # end
-
 
   def probability_density(api)
     probability_grid = initialize_probability_grid
