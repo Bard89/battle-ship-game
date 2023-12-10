@@ -30,8 +30,6 @@ module Helpers
     row.between?(0, Constants::GRID_SIZE - 1) && column.between?(0, Constants::GRID_SIZE - 1)
   end
 
-  private
-
   def format_probability(probability)
     (probability * 100).round(2).to_s.ljust(4)
   end

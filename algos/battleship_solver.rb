@@ -7,6 +7,7 @@ require 'byebug'
 module BattleshipSolver
   include Helpers
   include Constants
+  include SolverHelpers
 
   module_function
 
@@ -94,45 +95,13 @@ module BattleshipSolver
     end
   end
 
-  # def update_probability(probability_grid, row, col, hit)
-  #   action = hit ? :increase : :decrease
-  #
-  #   update_adjacent_cells(probability_grid, row, col, action)
-  #   # normalize_probabilities(probability_grid)
-  # end
-
   def update_probability(probability_grid, row, col, hit)
     action = hit ? :increase : :decrease
     update_adjacent_cells(probability_grid, row, col, action)
 
     # If it's a hit, also consider ship placement patterns
-    if hit
-      update_based_on_ship_patterns(probability_grid, row, col)
-    end
+    update_based_on_ship_patterns(probability_grid, row, col) if hit
   end
-
-
-  # Target the irregular ship based on the probability grid
-  # def target_irregular_ship(probability_grid)
-  #   highest_probability = 0
-  #   target_position = [0, 0]
-  #
-  #   [IRREGULAR_SHIP_HORIZONTAL, IRREGULAR_SHIP_VERTICAL].each do |ship_shape|
-  #     Constants::GRID_SIZE.times do |row|
-  #       Constants::GRID_SIZE.times do |col|
-  #         next unless can_whole_ship_be_here?(row, col, ship_shape)
-  #
-  #         probability_score = calculate_probability_score(probability_grid, row, col, ship_shape)
-  #         if probability_score > highest_probability
-  #           highest_probability = probability_score
-  #           target_position = [row, col]
-  #         end
-  #       end
-  #     end
-  #   end
-  #
-  #   target_position
-  # end
 
   def target_irregular_ship(probability_grid, targeted_cells)
     highest_probability = 0
@@ -151,21 +120,6 @@ module BattleshipSolver
   end
 
 
-  # def update_adjacent_cells(probability_grid, row, col, action)
-  #   (-1..1).each do |row_offset|
-  #     (-1..1).each do |col_offset|
-  #       next unless valid_coordinates?(row + row_offset, col + col_offset)
-  #
-  #       case action
-  #       when :increase
-  #         probability_grid[row + row_offset][col + col_offset] += 0.1 # Adjust this value as needed
-  #       when :decrease
-  #         probability_grid[row + row_offset][col + col_offset] -= 0.1 # Adjust this value as needed
-  #       end
-  #     end
-  #   end
-  # end
-
   def update_adjacent_cells(probability_grid, row, col, action)
     (-1..1).each do |row_offset|
       (-1..1).each do |col_offset|
@@ -183,37 +137,11 @@ module BattleshipSolver
   end
 
   def update_based_on_ship_patterns(probability_grid, row, col)
-    # Example: Increase probability of cells in a line extending from the hit cell
-    # This is a simplified example and should be refined based on your game's ship sizes and rules
+    # Increase probability of cells in a line extending from the hit cell
     [-1, 1].each do |offset|
-      if valid_coordinates?(row + offset, col)
-        probability_grid[row + offset][col] += 0.2
-      end
-      if valid_coordinates?(row, col + offset)
-        probability_grid[row][col + offset] += 0.2
-      end
+      probability_grid[row + offset][col] += 0.2 if valid_coordinates?(row + offset, col)
+      probability_grid[row][col + offset] += 0.2 if valid_coordinates?(row, col + offset)
     end
-  end
-
-
-
-  # def normalize_probabilities(probability_grid)
-  #   total = probability_grid.flatten.sum
-  #   probability_grid.map! { |row| row.map { |prob| prob / total } }
-  # end
-
-  def calculate_probability_score(probability_grid, row, col, ship_shape)
-    score = 0
-
-    ship_shape.each_with_index do |ship_row, r|
-      ship_row.each_with_index do |cell, c|
-        next unless cell == 'I' # Only consider the 'I' cells for the irregular ship
-
-        score += probability_grid[row + r][col + c] if valid_coordinates?(row + r, col + c)
-      end
-    end
-
-    score
   end
 
   def find_highest_probability_target(probability_grid)
@@ -223,17 +151,6 @@ module BattleshipSolver
       return [r_idx, col_idx] if col_idx
     end
   end
-
-
-
-
-
-
-
-
-
-
-
 
   def valid_coordinates?(row, column)
     row.between?(0, Constants::GRID_SIZE - 1) && column.between?(0, Constants::GRID_SIZE - 1)
