@@ -4,6 +4,7 @@ require_relative 'constants.rb'
 require_relative 'algos/brute_force.rb'
 require_relative 'algos/hunt_and_target.rb'
 require_relative 'algos/probability_density.rb'
+require_relative 'algos/battleship_solver.rb'
 
 require 'byebug'
 require 'set'
@@ -33,6 +34,8 @@ class MockBattleshipAPI
     count_shot(row, column)
     process_shot_result(row, column)
   end
+
+  # TODO; add fire for the avengers
 
   def parsed_response(hit)
     parsed_response = {
