@@ -7,6 +7,7 @@ require_relative 'algos/probability_density.rb'
 
 require 'byebug'
 require 'set'
+require 'awesome_print'
 
 
 class MockBattleshipAPI
@@ -42,12 +43,13 @@ class MockBattleshipAPI
     }
 
     puts self.print_grid(parsed_response['grid'])
+    ap parsed_response
 
     parsed_response
   end
 
   def finished?
-    !grid.any? { |row| row.include?('S') }
+    !grid.any? { |row| row.include?('S') || row.include?('I') }
   end
 
   private
@@ -58,7 +60,7 @@ class MockBattleshipAPI
 
   def process_shot_result(row, column)
     cell = grid[row][column]
-    hit = cell == 'S'
+    hit = (cell == 'S' || cell == 'I')
 
     update_grid_for_shot(row, column, hit)
 

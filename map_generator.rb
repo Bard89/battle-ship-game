@@ -59,9 +59,10 @@ class MapGenerator
 
         # uncomment to see the grid after each ship is placed
         #
-        # puts
-        # puts "Placed ship n. #{index} on row: #{row}, column: #{col} of size #{ship_size}, #{horizontal ? 'horizontally' : 'vertically'}"
-        # print_grid(@grid.flatten.join(''))
+        puts
+        puts "Placed ship n. #{index} on row: #{row}, column: #{col} of size #{ship_size}, #{horizontal ? 'horizontally' : 'vertically'}"
+        print_grid(@grid.flatten.join(''))
+
         placed = true
       end
     end
@@ -73,7 +74,7 @@ class MapGenerator
         # Check grid boundaries
         return false unless valid_coordinates?(row + r, col + c)
         # Check if the cell is already occupied ( can't happen now since we are placing the irregular ship first)
-        return false if @grid[row + r][col + c] != '*' && cell == 'S'
+        return false if @grid[row + r][col + c] != '*' && (cell == 'S' || cell == 'I')
       end
     end
 
@@ -83,7 +84,7 @@ class MapGenerator
   def place_whole_ship(row, col, ship_shape)
     ship_shape.each_with_index do |ship_row, r|
       ship_row.each_with_index do |cell, c|
-        grid[row + r][col + c] = cell if cell == 'S'
+        grid[row + r][col + c] = cell if (cell == 'S' || cell == 'I')
       end
     end
   end
