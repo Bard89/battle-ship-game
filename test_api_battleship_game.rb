@@ -38,7 +38,6 @@ class TestBattleshipGame
 end
 
 game = TestBattleshipGame.new($config)
-byebug
 # response = game.test_fire(6, 7)
 # response = game.test_fire_with_avenger(6, 7, 'hulk')
 # response = game.test_reset
