@@ -1,3 +1,4 @@
+require 'thread'
 require_relative 'battleship_api_mock.rb'
 require_relative 'algos/brute_force.rb'
 require_relative 'algos/hunt_and_target.rb'
@@ -40,11 +41,12 @@ def display_stats(algo_name, total_moves, avg_moves, avg_time, total_time, runs)
   puts
   puts "**Algo: #{algo_name}**"
   puts "Total moves standardised for 200 games: #{(total_moves / runs) * 200}"
+  puts "You are percentage wise below the possible worst case by: #{((12 * 12 * 200 - (total_moves / runs) * 200) / (12 * 12 * 200).to_f * 100).round(1)}%"
   puts "The global current best is #{Constants::CURRENT_BEST_200_GAMES_RUN}"
   improvement_needed = (total_moves / runs) * 200 - Constants::CURRENT_BEST_200_GAMES_RUN
-  puts "To beat the best you need to get #{improvement_needed} less moves"
+  puts "To beat the best you need to get #{improvement_needed} less moves by: #{(improvement_needed / Constants::CURRENT_BEST_200_GAMES_RUN.to_f * 100).round(1)}%"
   improvement_percent = -((Constants::CURRENT_BEST_200_GAMES_RUN - (total_moves / runs) * 200) / Constants::CURRENT_BEST_200_GAMES_RUN.to_f).round(1) * 100
-  puts "To beat the best you need to improve your algo by #{improvement_percent}%"
+  puts "To beat the best you need to improve your algo by #{improvement_percent.round(1)}%"
   puts "-----------------------------------------------------------"
   puts "Total moves: #{total_moves}"
   puts "Average moves: #{avg_moves}"

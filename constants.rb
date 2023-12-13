@@ -22,5 +22,6 @@ module Constants
   IRREGULAR_SHIP_VERTICAL = IRREGULAR_SHIP_HORIZONTAL.transpose
   CURRENT_BEST_200_GAMES_RUN = 9657 # check periodically on https://www.panaxeo.com/coding-arena#api
   AVENGERS = %w[hulk, ironman, thor]
-  PROBABILITY_INCREMENT = 0.1
+  PROBABILITY_INCREMENT = 0.2
+  PROBABILITY_DECREMENT = 0.1
 end
