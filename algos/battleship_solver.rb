@@ -137,6 +137,9 @@ module BattleshipSolver
     end
   end
 
+  # this one doesn't work on 100 percent, creates these stripes on the probability grid, Which I;m not suere matters
+  # The probability should probably be increasing toward the center
+  # TODO fix if you have enough time
   def update_probability_for_regular_ship_position(grid, row, col, ship_shape, increment, orientation)
     ship_shape.each_with_index do |ship_row, r_offset|
       ship_row.each_with_index do |cell, c_offset|
