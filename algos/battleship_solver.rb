@@ -11,24 +11,25 @@ module BattleshipSolver
 
   module_function
 
+  @initialize_regular_probabilities = true
   def probability_density(api)
     probability_grid = initialize_probability_grid
-    # update_grid_with_irregular_ship_probabilities(probability_grid) # Initialize probabilities for irregular ship
-    update_grid_with_regular_ship_probabilities(probability_grid) # Initialize probabilities for regular ships
+    update_grid_with_irregular_ship_probabilities(probability_grid) # Initialize probabilities for irregular ship
 
     api.print_probability_grid(probability_grid)
-    byebug
     targeted_cells = Set.new
 
-    # until api.finished? # until the game is over
+    until api.finished? # until the game is over
 
     # just to optimize the game, to update the probabilities right
-    until api.avengerAvailable
-      # if api.avengerAvailable # if the biggest ship is sunk, use the avenger
-      #   target_row, target_col = find_highest_probability_target(probability_grid)
-      # else
+    # until api.avengerAvailable
+      if api.avengerAvailable # if the biggest ship is sunk, use the avenger
+        update_grid_with_regular_ship_probabilities(probability_grid) if @initialize_regular_probabilities
+        @initialize_regular_probabilities = false
+        target_row, target_col = find_highest_probability_target(probability_grid, targeted_cells)
+      else
         target_row, target_col = target_irregular_ship(probability_grid, targeted_cells)
-      # end
+      end
 
         if targeted_cells.include?([target_row, target_col])
           raise "Already targeted cell #{target_row}, #{target_col}"
@@ -218,13 +219,25 @@ end
     end
   end
 
-  def find_highest_probability_target(probability_grid)
-    max_prob = probability_grid.flatten.max
+  def find_highest_probability_target(probability_grid, targeted_cells)
+    max_prob = -Float::INFINITY
+    best_target = [-1, -1]
+
     probability_grid.each_with_index do |row, r_idx|
-      col_idx = row.index(max_prob)
-      return [r_idx, col_idx] if col_idx
+      row.each_with_index do |prob, c_idx|
+        next if targeted_cells.include?([r_idx, c_idx])  # Skip over cells that have already been targeted
+        if prob > max_prob
+          max_prob = prob
+          best_target = [r_idx, c_idx]
+        end
+      end
     end
+
+    raise "No valid targets remaining." if best_target == [-1, -1]
+
+    best_target
   end
+
 
   def valid_coordinates?(row, column)
     row.between?(0, Constants::GRID_SIZE - 1) && column.between?(0, Constants::GRID_SIZE - 1)
