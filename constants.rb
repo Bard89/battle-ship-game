@@ -7,6 +7,12 @@ module Constants
   #   %w[* S * S *]
   # ]
 
+  REGULAR_SHIP_SHAPES = [
+    [%w[S S S S]],
+    [%w[S S S]],
+    [%w[S S S]],
+    [%w[S S]]
+  ]
   # the I is better so we can match the ship and return that we have avengers available
   IRREGULAR_SHIP_HORIZONTAL = [
     %w[* I * I *],
@@ -16,4 +22,5 @@ module Constants
   IRREGULAR_SHIP_VERTICAL = IRREGULAR_SHIP_HORIZONTAL.transpose
   CURRENT_BEST_200_GAMES_RUN = 9657 # check periodically on https://www.panaxeo.com/coding-arena#api
   AVENGERS = %w[hulk, ironman, thor]
+  PROBABILITY_INCREMENT = 0.1
 end
