@@ -54,14 +54,14 @@ module BattleshipSolver
         update_probability(probability_grid_combined, target_row, target_col, result['result'])
 
 
-        if result['result']
-          ship_hits = record_hit(target_row, target_col)
-          if ship_sunk?(ship_hits, probability_grid_irregular)
-            update_for_sunk_ship(ship_hits, probability_grid_irregular)
-            @confirmed_sunk_ships.concat(ship_hits)
-            @hit_ships.delete(ship_hits.object_id)
-          end
-        end
+        # if result['result']
+        #   ship_hits = record_hit(target_row, target_col)
+        #   if ship_sunk?(ship_hits, probability_grid_irregular)
+        #     update_for_sunk_ship(ship_hits, probability_grid_irregular)
+        #     @confirmed_sunk_ships.concat(ship_hits)
+        #     @hit_ships.delete(ship_hits.object_id)
+        #   end
+        # end
 
         targeted_cells.add([target_row, target_col])
 
@@ -231,9 +231,9 @@ module BattleshipSolver
 
         case action
         when :increase
-          probability_grid[row + row_offset][col + col_offset] += 0.3
+          probability_grid[row + row_offset][col + col_offset] += Constants::ADJACENT_CELL_PROBABILITY
         when :decrease
-          probability_grid[row + row_offset][col + col_offset] -= 0.3
+          probability_grid[row + row_offset][col + col_offset] -= Constants::ADJACENT_CELL_PROBABILITY
         end
       end
     end
@@ -242,8 +242,8 @@ module BattleshipSolver
   def update_based_on_ship_patterns(probability_grid, row, col)
     # Increase probability of cells in a line extending from the hit cell
     [-1, 1].each do |offset|
-      probability_grid[row + offset][col] += 0.1 if valid_coordinates?(row + offset, col)
-      probability_grid[row][col + offset] += 0.1 if valid_coordinates?(row, col + offset)
+      probability_grid[row + offset][col] += Constants::SHIP_PATTERN_PROBABILITY if valid_coordinates?(row + offset, col)
+      probability_grid[row][col + offset] += Constants::SHIP_PATTERN_PROBABILITY if valid_coordinates?(row, col + offset)
     end
   end
 
