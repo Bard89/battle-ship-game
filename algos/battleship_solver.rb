@@ -11,24 +11,30 @@ module BattleshipSolver
 
   module_function
 
-  @initialize_regular_probabilities = true
   def probability_density(api)
-    probability_grid = initialize_probability_grid
-    update_grid_with_irregular_ship_probabilities(probability_grid) # Initialize probabilities for irregular ship
+    probability_grid_irregular = initialize_probability_grid
+    probability_grid_combined = initialize_probability_grid
 
-    api.print_probability_grid(probability_grid)
+    update_grid_with_irregular_ship_probabilities(probability_grid_irregular)
+
+    # update_grid_with_regular_ship_probabilities(probability_grid_combined)
+    update_grid_with_irregular_ship_probabilities(probability_grid_combined)
+
+    puts "Irregular ship probability grid:"
+    api.print_probability_grid(probability_grid_combined)
+    puts "Regular ship probability grid:"
+    api.print_probability_grid(probability_grid_irregular)
     targeted_cells = Set.new
 
     until api.finished? # until the game is over
+      target_row, target_col = nil
 
     # just to optimize the game, to update the probabilities right
     # until api.avengerAvailable
       if api.avengerAvailable # if the biggest ship is sunk, use the avenger
-        update_grid_with_regular_ship_probabilities(probability_grid) if @initialize_regular_probabilities
-        @initialize_regular_probabilities = false
-        target_row, target_col = find_highest_probability_target(probability_grid, targeted_cells)
+        target_row, target_col = target_ship(probability_grid_combined, targeted_cells)
       else
-        target_row, target_col = target_irregular_ship(probability_grid, targeted_cells)
+        target_row, target_col = target_ship(probability_grid_irregular, targeted_cells)
       end
 
         if targeted_cells.include?([target_row, target_col])
@@ -40,9 +46,16 @@ module BattleshipSolver
         targeted_cells.add([target_row, target_col])
 
         result = api.fire(target_row, target_col)
-        update_probability(probability_grid, target_row, target_col, result['result'])
+        update_probability(probability_grid_irregular, target_row, target_col, result['result'])
+        update_probability(probability_grid_combined, target_row, target_col, result['result'])
 
-        api.print_probability_grid(probability_grid)
+        targeted_cells.add([target_row, target_col])
+
+        puts "Irregular ship probability grid:"
+        api.print_probability_grid(probability_grid_irregular)
+        puts
+        puts "Regular ship probability grid:"
+        api.print_probability_grid(probability_grid_combined)
     end
   end
 
@@ -169,30 +182,31 @@ module BattleshipSolver
     update_adjacent_cells(probability_grid, row, col, action)
 
     # If it's a hit, also consider ship placement patterns
+    update_probabilities_after_miss(probability_grid, row, col, Constants::REGULAR_SHIP_SHAPES) unless hit
     update_based_on_ship_patterns(probability_grid, row, col) if hit
   end
 
-def target_irregular_ship(probability_grid, targeted_cells)
-  highest_probability = -Float::INFINITY
-  target_position = [-1, -1]
+  def target_ship(probability_grid, targeted_cells)
+    highest_probability = -Float::INFINITY
+    target_position = [-1, -1]
 
-  probability_grid.each_with_index do |row, r_idx|
-    row.each_with_index do |prob, c_idx|
-      cell_position = [r_idx, c_idx]
+    probability_grid.each_with_index do |row, r_idx|
+      row.each_with_index do |prob, c_idx|
+        cell_position = [r_idx, c_idx]
 
-      if prob > highest_probability && !targeted_cells.include?(cell_position)
-        highest_probability = prob
-        target_position = cell_position
+        if prob > highest_probability && !targeted_cells.include?(cell_position)
+          highest_probability = prob
+          target_position = cell_position
+        end
       end
     end
-  end
 
-  if target_position == [-1, -1]
-    raise "No valid target found. All cells may have been targeted."
-  end
+    if target_position == [-1, -1]
+      raise "No valid target found. All cells may have been targeted."
+    end
 
-  target_position
-end
+    target_position
+  end
 
 
   def update_adjacent_cells(probability_grid, row, col, action)
@@ -203,9 +217,9 @@ end
 
         case action
         when :increase
-          probability_grid[row + row_offset][col + col_offset] += 0.1
+          probability_grid[row + row_offset][col + col_offset] += 0.2
         when :decrease
-          probability_grid[row + row_offset][col + col_offset] -= 0.1
+          probability_grid[row + row_offset][col + col_offset] -= 0.2
         end
       end
     end
@@ -214,30 +228,57 @@ end
   def update_based_on_ship_patterns(probability_grid, row, col)
     # Increase probability of cells in a line extending from the hit cell
     [-1, 1].each do |offset|
-      probability_grid[row + offset][col] += 0.2 if valid_coordinates?(row + offset, col)
-      probability_grid[row][col + offset] += 0.2 if valid_coordinates?(row, col + offset)
+      probability_grid[row + offset][col] += 0.1 if valid_coordinates?(row + offset, col)
+      probability_grid[row][col + offset] += 0.1 if valid_coordinates?(row, col + offset)
     end
   end
 
-  def find_highest_probability_target(probability_grid, targeted_cells)
-    max_prob = -Float::INFINITY
-    best_target = [-1, -1]
+  def overlaps_missed_cell?(ship_placement, row, col, missed_row, missed_col)
+    ship_placement.each_with_index do |ship_row, r_offset|
+      ship_row.each_with_index do |cell, c_offset|
+        # Calculate the absolute position of the cell in the grid
+        absolute_row = row + r_offset
+        absolute_col = col + c_offset
 
-    probability_grid.each_with_index do |row, r_idx|
-      row.each_with_index do |prob, c_idx|
-        next if targeted_cells.include?([r_idx, c_idx])  # Skip over cells that have already been targeted
-        if prob > max_prob
-          max_prob = prob
-          best_target = [r_idx, c_idx]
+        # Check if the absolute position matches the missed cell
+        return true if absolute_row == missed_row && absolute_col == missed_col
+      end
+    end
+    false
+  end
+
+  def decrease_probability_for_ship_placement(grid, row, col, ship_placement)
+    ship_placement.each_with_index do |ship_row, r_offset|
+      ship_row.each_with_index do |cell, c_offset|
+        # Calculate the absolute position of the cell in the grid
+        absolute_row = row + r_offset
+        absolute_col = col + c_offset
+
+        # Decrease the probability if the cell is within the grid boundaries
+        if valid_coordinates?(absolute_row, absolute_col)
+          grid[absolute_row][absolute_col] -= Constants::PROBABILITY_DECREMENT
         end
       end
     end
-
-    raise "No valid targets remaining." if best_target == [-1, -1]
-
-    best_target
   end
 
+  def update_probabilities_after_miss(grid, missed_row, missed_col, ship_shapes)
+    ship_shapes.each do |ship_shape|
+      Constants::GRID_SIZE.times do |row|
+        Constants::GRID_SIZE.times do |col|
+          [:horizontal, :vertical].each do |orientation|
+            # Generate the ship placement based on the orientation
+            ship_placement = orientation == :horizontal ? ship_shape : ship_shape.transpose
+
+            # If the ship overlaps the missed cell, decrease the probabilities
+            if overlaps_missed_cell?(ship_placement, row, col, missed_row, missed_col)
+              decrease_probability_for_ship_placement(grid, row, col, ship_placement)
+            end
+          end
+        end
+      end
+    end
+  end
 
   def valid_coordinates?(row, column)
     row.between?(0, Constants::GRID_SIZE - 1) && column.between?(0, Constants::GRID_SIZE - 1)
