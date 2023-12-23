@@ -5,12 +5,12 @@ require 'byebug'
 require 'awesome_print'
 require 'json'
 
-require_relative 'helpers.rb'
+require_relative 'helpers/print_helpers.rb'
 require_relative 'config.rb'
 
 class TestBattleshipGame
   include HTTParty
-  include Helpers
+  include PrintHelpers
 
   base_uri 'europe-west1-ca-2023-dev.cloudfunctions.net/battleshipsApi'
 

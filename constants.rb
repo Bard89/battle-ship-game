@@ -1,30 +1,35 @@
 module Constants
+  # playing field
   GRID_SIZE = 12
-  REGULAR_SHIPS = [4, 3, 3, 2] # Regular ships
-  # IRREGULAR_SHIP_HORIZONTAL = [
-  #   %w[* S * S *],
-  #   %w[S S S S S],
-  #   %w[* S * S *]
-  # ]
 
+  REGULAR_SHIPS = [4, 3, 3, 2]
   REGULAR_SHIP_SHAPES = [
     [%w[S S S S]],
     [%w[S S S]],
     [%w[S S S]],
     [%w[S S]]
   ]
-  # the I is better so we can match the ship and return that we have avengers available
+
+  # the I is better than just S so we can match the ship and return that we have avengers available
   IRREGULAR_SHIP_HORIZONTAL = [
     %w[* I * I *],
     %w[I I I I I],
     %w[* I * I *]
   ]
   IRREGULAR_SHIP_VERTICAL = IRREGULAR_SHIP_HORIZONTAL.transpose
-  CURRENT_BEST_200_GAMES_RUN = 9657 # check periodically on https://www.panaxeo.com/coding-arena#api
+
+  # game stats
+  CURRENT_BEST_200_GAMES_RUN = 9625 # check periodically on https://www.panaxeo.com/coding-arena#api
+
+  # kind of superpowers one can get after sinking the irregular ship
   AVENGERS = %w[hulk, ironman, thor]
-  PROBABILITY_INCREMENT = 0.2
-  PROBABILITY_DECREMENT = 0.2
-  ADJACENT_CELL_INCREASE_PROBABILITY = 0.0
-  ADJACENT_CELL_DECREASE_PROBABILITY = 0.0
-  SHIP_PATTERN_PROBABILITY = 3.5
+
+  # probability changes for the probability_density algo
+  SHIP_PROBABILITY_INCREMENT = 0.2
+  SHIP_PROBABILITY_DECREMENT = 0.2
+
+  ADJACENT_CELL_PROBABILITY_INCREMENT = 0.0
+  ADJACENT_CELL_PROBABILITY_DECREMENT = 0.0
+
+  SHIP_PATTERN_PROBABILITY_INCREMENT = 3.5
 end
