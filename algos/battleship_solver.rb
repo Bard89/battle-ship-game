@@ -88,7 +88,7 @@ module BattleshipSolver
 
           if can_whole_odd_ship_be_here?(row, col, ship_shape)
             # Increase probability for cells where the irregular ship can be placed
-            update_probability_for_irregular_ship_position(grid, row, col, ship_shape, Constants::PROBABILITY_INCREMENT, orientation)
+            update_probability_for_irregular_ship_position(grid, row, col, ship_shape, Constants::SHIP_PROBABILITY_INCREMENT, orientation)
           end
         end
       end
@@ -105,7 +105,7 @@ module BattleshipSolver
 
             if can_whole_even_ship_be_here?(row, col, ship_shape)
               # Increase probability for cells where the regular ship can be placed
-              update_probability_for_regular_ship_position(grid, row, col, ship_shape, Constants::PROBABILITY_INCREMENT, orientation)
+              update_probability_for_regular_ship_position(grid, row, col, ship_shape, Constants::SHIP_PROBABILITY_INCREMENT, orientation)
             end
           end
         end
@@ -231,9 +231,9 @@ module BattleshipSolver
 
         case action
         when :increase
-          probability_grid[row + row_offset][col + col_offset] += Constants::ADJACENT_CELL_INCREASE_PROBABILITY
+          probability_grid[row + row_offset][col + col_offset] += Constants::ADJACENT_CELL_PROBABILITY_INCREMENT
         when :decrease
-          probability_grid[row + row_offset][col + col_offset] -= Constants::ADJACENT_CELL_DECREASE_PROBABILITY
+          probability_grid[row + row_offset][col + col_offset] -= Constants::ADJACENT_CELL_PROBABILITY_DECREMENT
         end
       end
     end
@@ -242,8 +242,8 @@ module BattleshipSolver
   def update_based_on_ship_patterns(probability_grid, row, col)
     # Increase probability of cells in a line extending from the hit cell
     [-1, 1].each do |offset|
-      probability_grid[row + offset][col] += Constants::SHIP_PATTERN_PROBABILITY if valid_coordinates?(row + offset, col)
-      probability_grid[row][col + offset] += Constants::SHIP_PATTERN_PROBABILITY if valid_coordinates?(row, col + offset)
+      probability_grid[row + offset][col] += Constants::SHIP_PATTERN_PROBABILITY_INCREMENT if valid_coordinates?(row + offset, col)
+      probability_grid[row][col + offset] += Constants::SHIP_PATTERN_PROBABILITY_INCREMENT if valid_coordinates?(row, col + offset)
     end
   end
 
@@ -270,7 +270,7 @@ module BattleshipSolver
 
         # Decrease the probability if the cell is within the grid boundaries
         if valid_coordinates?(absolute_row, absolute_col)
-          grid[absolute_row][absolute_col] -= Constants::PROBABILITY_DECREMENT
+          grid[absolute_row][absolute_col] -= Constants::SHIP_PROBABILITY_DECREMENT
         end
       end
     end
