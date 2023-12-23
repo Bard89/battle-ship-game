@@ -1,1 +1,2 @@
-*.rb linguist-language=Ruby
+* linguist-vendored
+*.rb linguist-vendored=false
