@@ -231,9 +231,9 @@ module BattleshipSolver
 
         case action
         when :increase
-          probability_grid[row + row_offset][col + col_offset] += Constants::ADJACENT_CELL_PROBABILITY
+          probability_grid[row + row_offset][col + col_offset] += Constants::ADJACENT_CELL_INCREASE_PROBABILITY
         when :decrease
-          probability_grid[row + row_offset][col + col_offset] -= Constants::ADJACENT_CELL_PROBABILITY
+          probability_grid[row + row_offset][col + col_offset] -= Constants::ADJACENT_CELL_DECREASE_PROBABILITY
         end
       end
     end
