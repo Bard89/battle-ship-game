@@ -1,11 +1,10 @@
 require_relative '../map_generator.rb'
 require_relative '../constants.rb'
 require_relative '../battleship_api_mock.rb'
-require_relative 'solver_helpers.rb'
 require 'byebug'
 
 module BattleshipSolver
-  include Helpers
+  include PrintHelpers
   include Constants
   include SolverHelpers
 
@@ -342,8 +341,8 @@ module BattleshipSolver
       end
     end
   end
+end
 
-  def valid_coordinates?(row, column)
-    row.between?(0, Constants::GRID_SIZE - 1) && column.between?(0, Constants::GRID_SIZE - 1)
-  end
+def valid_coordinates?(row, column)
+  row.between?(0, Constants::GRID_SIZE - 1) && column.between?(0, Constants::GRID_SIZE - 1)
 end

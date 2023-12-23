@@ -1,12 +1,12 @@
 require_relative '../map_generator.rb'
-require_relative '../helpers.rb'
+require_relative '../helpers/print_helpers.rb'
 require_relative '../constants.rb'
 require_relative '../battleship_api_mock.rb'
 
 require 'byebug'
 
 module BruteForce
-  include Helpers
+  include PrintHelpers
   include Constants
 
   module_function

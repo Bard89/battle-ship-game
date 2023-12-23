@@ -4,7 +4,7 @@ require_relative '../battleship_api_mock.rb'
 require 'byebug'
 
 module ProbabilityDensity
-  include Helpers
+  include PrintHelpers
   include Constants
 
   module_function

@@ -1,9 +1,10 @@
 require 'byebug'
-require_relative 'helpers.rb'
+require_relative 'helpers/print_helpers.rb'
+require_relative 'helpers/solver_helpers.rb'
 require_relative 'constants.rb'
 
 class MapGenerator
-  include Helpers
+  include PrintHelpers
   include Constants
 
   attr_reader :grid
