@@ -113,4 +113,9 @@ module Helpers
   # def format_probability(probability)
   #   (probability * 100).round(2).to_s.ljust(4)
   # end
+
+  def self.color_for_probability(prob, max_prob)
+    intensity = (prob.to_f / max_prob) ** 0.5  # Square root for better contrast
+    [(intensity * 255).to_i, 0, (255 - intensity * 255).to_i, 1]  # RGB Alpha
+  end
 end
