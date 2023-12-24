@@ -1,7 +1,6 @@
 require_relative '../constants.rb'
 
 module PrintHelpers
-
   def print_grid(grid_string)
     # Adding column headers (0 to 11) with spacing to match the grid
     column_headers = '        ' + (0...Constants::GRID_SIZE).map { |n| n.to_s.ljust(2) }.join(' ')
@@ -31,6 +30,25 @@ module PrintHelpers
       cell # No color for other cells
     end
   end
+
+  def print_probability_grid(probability_grid)
+    max_prob = probability_grid.flatten.max
+    min_prob = probability_grid.flatten.min
+
+    # Adjust the headers to be centered over 5 characters
+    column_headers = ' ' * 9 + (0...Constants::GRID_SIZE).map { |n| n.to_s.center(5) }.join(' ')
+    puts column_headers
+
+    probability_grid.each_with_index do |row, index|
+      formatted_row_number = format('Row %-3d', index) # Adjusts the spacing for row numbers
+      formatted_row = row.map do |prob|
+        formatted_prob = format("%+5.1f", prob) # Ensure the number takes up 5 spaces including the sign
+        "#{color_for_probability(prob, min_prob, max_prob)}#{formatted_prob}\e[0m"
+      end.join(' ')
+      puts "#{formatted_row_number} #{formatted_row}"
+    end
+  end
+
 
   def color_for_probability(prob, min_prob, max_prob)
     if prob < 0
@@ -63,32 +81,5 @@ module PrintHelpers
     else
       "\e[38;5;196m" # Bright Red (Highest probability)
     end
-  end
-
-  def print_probability_grid(probability_grid)
-    max_prob = probability_grid.flatten.max
-    min_prob = probability_grid.flatten.min
-
-    # Adjust the headers to be centered over 5 characters
-    column_headers = ' ' * 9 + (0...Constants::GRID_SIZE).map { |n| n.to_s.center(5) }.join(' ')
-    puts column_headers
-
-    probability_grid.each_with_index do |row, index|
-      formatted_row_number = format('Row %-3d', index) # Adjusts the spacing for row numbers
-      formatted_row = row.map do |prob|
-        formatted_prob = format("%+5.1f", prob) # Ensure the number takes up 5 spaces including the sign
-        "#{color_for_probability(prob, min_prob, max_prob)}#{formatted_prob}\e[0m"
-      end.join(' ')
-      puts "#{formatted_row_number} #{formatted_row}"
-    end
-  end
-
-  def self.color_for_probability(prob, max_prob)
-    intensity = (prob.to_f / max_prob) ** 0.5  # Square root for better contrast
-    [(intensity * 255).to_i, 0, (255 - intensity * 255).to_i, 1]  # RGB Alpha
-  end
-
-  def valid_coordinates?(row, column)
-    row.between?(0, Constants::GRID_SIZE - 1) && column.between?(0, Constants::GRID_SIZE - 1)
   end
 end
