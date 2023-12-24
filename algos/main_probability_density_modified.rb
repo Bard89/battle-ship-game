@@ -3,7 +3,7 @@ require_relative '../constants.rb'
 require_relative '../battleship_api_mock.rb'
 require 'byebug'
 
-module BattleshipSolver
+module MainProbabilityDensityModified
   include PrintHelpers
   include Constants
   include SolverHelpers
