@@ -10,11 +10,13 @@ module PrintHelpers
   #   # Printing each row with its row number
   #   grid_string.chars.each_slice(Constants::GRID_SIZE).with_index do |row, index|
   #     formatted_row_number = format('Row %-3d', index) # Adjusts the spacing for row numbers
-  #     colored_row = row.map { |cell| color_for_ship(cell) }.join('  ') # Apply color to ships
+  #     colored_row = row.map { |cell| colorize_ship(cell) }.join('  ') # Apply color to ships
   #     puts "#{formatted_row_number} #{colored_row}"
   #   end
   #   # otherwise it will return the nonformatted grid_string
   #   nil
+  #   # uncomment to be able to debug the algo better
+  #   sleep(0.3)
   # end
 
   # grid as wide as the probability grid
@@ -27,25 +29,31 @@ module PrintHelpers
     grid_string.chars.each_slice(Constants::GRID_SIZE).with_index do |row, index|
       formatted_row_number = format('Row %-3d', index) # Adjusts the spacing for row numbers
       colored_row = row.map do |cell|
-        colored_cell = color_for_ship(cell)
+        colored_cell = colorize_ship(cell)
         visible_length = colored_cell.gsub(/\e\[\d+(;\d+)*m/, '').length # Length without ANSI codes
         colored_cell.ljust(5 + colored_cell.length - visible_length) # Adjust for visible length
       end.join(' ')
       puts "#{formatted_row_number}    #{colored_row}"
     end
     nil
+    # uncomment to be able to debug the algo better
+    # sleep(0.3)
   end
 
-  def color_for_ship(cell)
+  def colorize_ship(cell)
+    # ANSI code for bold text is \e[1m
+    bold_start = "\e[1m"
+    bold_end = "\e[0m"
+
     case cell
     when 'I' # Irregular ship
-      "\e[31mI\e[0m" # Red
+      "#{bold_start}\e[31mI#{bold_end}" # Red
     when 'S' # Regular ship
-      # red orange
-      "\e[38;5;208mS\e[0m"
-    when 'X' # shot
-      # blue
-      "\e[38;5;33mX\e[0m"
+      "#{bold_start}\e[38;5;220mS#{bold_end}" # Yellow
+    when 'X' # Hit
+      "#{bold_start}\e[38;5;33mX#{bold_end}" # Blue
+    when '.' # Miss
+      "#{bold_start}\e[31m.#{bold_end}" # Red
     else
       cell # No color for other cells
     end
