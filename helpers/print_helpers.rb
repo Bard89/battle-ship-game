@@ -1,18 +1,38 @@
 require_relative '../constants.rb'
 
 module PrintHelpers
+  # grid with normal width
+  # def print_grid(grid_string)
+  #   # Adding column headers (0 to 11) with spacing to match the grid
+  #   column_headers = '        ' + (0...Constants::GRID_SIZE).map { |n| n.to_s.ljust(2) }.join(' ')
+  #   puts column_headers
+  #
+  #   # Printing each row with its row number
+  #   grid_string.chars.each_slice(Constants::GRID_SIZE).with_index do |row, index|
+  #     formatted_row_number = format('Row %-3d', index) # Adjusts the spacing for row numbers
+  #     colored_row = row.map { |cell| color_for_ship(cell) }.join('  ') # Apply color to ships
+  #     puts "#{formatted_row_number} #{colored_row}"
+  #   end
+  #   # otherwise it will return the nonformatted grid_string
+  #   nil
+  # end
+
+  # grid as wide as the probability grid
   def print_grid(grid_string)
-    # Adding column headers (0 to 11) with spacing to match the grid
-    column_headers = '        ' + (0...Constants::GRID_SIZE).map { |n| n.to_s.ljust(2) }.join(' ')
+    # Adjust the headers to be centered over 5 characters
+    column_headers = ' ' * 9 + (0...Constants::GRID_SIZE).map { |n| n.to_s.center(5) }.join(' ')
     puts column_headers
 
     # Printing each row with its row number
     grid_string.chars.each_slice(Constants::GRID_SIZE).with_index do |row, index|
       formatted_row_number = format('Row %-3d', index) # Adjusts the spacing for row numbers
-      colored_row = row.map { |cell| color_for_ship(cell) }.join('  ') # Apply color to ships
-      puts "#{formatted_row_number} #{colored_row}"
+      colored_row = row.map do |cell|
+        colored_cell = color_for_ship(cell)
+        visible_length = colored_cell.gsub(/\e\[\d+(;\d+)*m/, '').length # Length without ANSI codes
+        colored_cell.ljust(5 + colored_cell.length - visible_length) # Adjust for visible length
+      end.join(' ')
+      puts "#{formatted_row_number}    #{colored_row}"
     end
-    # otherwise it will return the nonformatted grid_string
     nil
   end
 
@@ -45,20 +65,21 @@ module PrintHelpers
         formatted_prob = format("%+5.1f", prob) # Ensure the number takes up 5 spaces including the sign
         "#{color_for_probability(prob, min_prob, max_prob)}#{formatted_prob}\e[0m"
       end.join(' ')
+
       puts "#{formatted_row_number} #{formatted_row}"
     end
   end
 
-
   def color_for_probability(prob, min_prob, max_prob)
+    # Map negative probabilities to grayscale
     if prob < 0
-      # Map negative probabilities to grayscale
       intensity = 232 + (255 - 232) * [prob / min_prob, 1].min # 232 to 255 are grayscale
       return "\e[38;5;#{intensity}m"
     end
 
     # Map non-negative probabilities to colors with red as highest
     ratio = (prob - min_prob) / (max_prob - min_prob)
+
     case ratio
     when 0.0..0.1
       "\e[38;5;40m"  # Dark Green
