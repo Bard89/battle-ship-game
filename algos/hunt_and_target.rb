@@ -6,7 +6,7 @@ require_relative '../battleship_api_mock.rb'
 require 'byebug'
 
 module HuntAndTarget
-  include PrintHelpers
+  extend PrintHelpers
   include Constants
 
   module_function
@@ -35,7 +35,7 @@ module HuntAndTarget
 
       if response["finished"]
         puts "Game over in #{response["moveCount"]} moves"
-        api.print_grid(response["grid"])
+        print_grid(response["grid"])
         break
       end
     end
