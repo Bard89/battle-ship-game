@@ -6,7 +6,7 @@ require 'byebug'
 module MainProbabilityDensityModified
   include PrintHelpers
   include Constants
-  include SolverHelpers
+  include AlgoHelpers
 
   @hit_ships = {}
   @confirmed_sunk_ships = []

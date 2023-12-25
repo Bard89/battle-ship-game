@@ -1,6 +1,6 @@
 require_relative 'map_generator.rb'
 require_relative 'helpers/print_helpers.rb'
-require_relative 'helpers/solver_helpers.rb'
+require_relative 'helpers/algo_helpers.rb'
 require_relative 'constants.rb'
 require_relative 'algos/brute_force.rb'
 require_relative 'algos/hunt_and_target.rb'

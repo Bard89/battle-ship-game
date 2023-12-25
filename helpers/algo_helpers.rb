@@ -1,5 +1,5 @@
 require_relative '../constants.rb'
 
-module SolverHelpers
+module AlgoHelpers
 
 end
