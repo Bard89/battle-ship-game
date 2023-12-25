@@ -5,7 +5,7 @@ require_relative 'constants.rb'
 require_relative 'algos/brute_force.rb'
 require_relative 'algos/hunt_and_target.rb'
 require_relative 'algos/probability_density.rb'
-require_relative 'algos/main_probability_density_modified.rb'
+require_relative 'algos/modified_probability_density.rb'
 
 require 'byebug'
 require 'set'

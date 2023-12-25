@@ -3,10 +3,13 @@ require_relative '../constants.rb'
 require_relative '../battleship_api_mock.rb'
 require 'byebug'
 
-module MainProbabilityDensityModified
+require_relative '../helpers/print_helpers'
+require_relative '../helpers/algo_helpers'
+
+module ModifiedProbabilityDensity
   include PrintHelpers
-  include Constants
   include AlgoHelpers
+  include Constants
 
   @hit_ships = {}
   @confirmed_sunk_ships = []
