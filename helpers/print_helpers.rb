@@ -15,7 +15,7 @@ module PrintHelpers
   #   end
   #   # otherwise it will return the nonformatted grid_string
   #   nil
-  #   # uncomment to be able to debug the algo better
+  #   # uncomment to be able to see step by step changes in the algo solving better
   #   sleep(0.3)
   # end
 
@@ -36,7 +36,7 @@ module PrintHelpers
       puts "#{formatted_row_number}    #{colored_row}"
     end
     nil
-    # uncomment to be able to debug the algo better
+    # uncomment to be able to see step by step changes in the algo solving better
     # sleep(0.3)
   end
 
@@ -57,13 +57,11 @@ module PrintHelpers
     header_spacing = 5
     cell_spacing = 5
 
-    # Create and print the header
     column_headers = (0...Constants::GRID_SIZE).map do |col|
       formatted_header_or_label(col, col == target_column, header_spacing, purple_color_code)
     end.join(' ')
     puts (' ' * 9) + column_headers
 
-    # Print each row of the grid
     grid_string.chars.each_slice(Constants::GRID_SIZE).with_index do |row, index|
       formatted_row_number = formatted_header_or_label("Row #{index}", index == target_row, header_spacing + 1, purple_color_code)
 
@@ -79,7 +77,6 @@ module PrintHelpers
     # sleep(0.3)
   end
 
-  # Helper method to adjust the cell padding accounting for ANSI color codes
   def adjust_cell_padding(colored_cell, cell_spacing)
     visible_length = colored_cell.gsub(/\e\[\d+(;\d+)*m/, '').length
     colored_cell.ljust(cell_spacing + colored_cell.length - visible_length)
