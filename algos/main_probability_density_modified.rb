@@ -3,7 +3,7 @@ require_relative '../constants.rb'
 require_relative '../battleship_api_mock.rb'
 require 'byebug'
 
-module BattleshipSolver
+module MainProbabilityDensityModified
   include PrintHelpers
   include Constants
   include SolverHelpers
@@ -18,7 +18,6 @@ module BattleshipSolver
     probability_grid_combined = initialize_probability_grid
 
     update_grid_with_irregular_ship_probabilities(probability_grid_irregular)
-
     # update_grid_with_regular_ship_probabilities(probability_grid_combined)
     update_grid_with_irregular_ship_probabilities(probability_grid_combined)
 
@@ -43,8 +42,6 @@ module BattleshipSolver
           raise "Already targeted cell #{target_row}, #{target_col}"
         end
 
-        puts
-        puts "Targeting row #{target_row}, col #{target_col}"
         targeted_cells.add([target_row, target_col])
 
 
@@ -64,6 +61,12 @@ module BattleshipSolver
 
         targeted_cells.add([target_row, target_col])
 
+
+        purple_bold_start = "\e[1m\e[38;5;198m"
+        purple_bold_end = "\e[0m"
+
+        puts "#{purple_bold_start}Targeted#{purple_bold_end}"
+        api.print_target_grid(result['grid'], target_row, target_col)
         puts "Irregular ship probability grid:"
         api.print_probability_grid(probability_grid_irregular)
         puts
