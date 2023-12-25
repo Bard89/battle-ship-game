@@ -61,7 +61,7 @@ module PrintHelpers
     column_headers = (0...Constants::GRID_SIZE).map do |col|
       formatted_header_or_label(col, col == target_column, header_spacing, purple_color_code)
     end.join(' ')
-    puts (' ' * 6) + column_headers
+    puts (' ' * 9) + column_headers
 
     # Print each row of the grid
     grid_string.chars.each_slice(Constants::GRID_SIZE).with_index do |row, index|
@@ -73,7 +73,7 @@ module PrintHelpers
         adjust_cell_padding(colored_cell, cell_spacing)
       end.join(' ')
 
-      puts "#{formatted_row_number} #{colored_row}"
+      puts "#{formatted_row_number}#{(' ' * 5)}#{colored_row}"
     end
     nil
     # sleep(0.3)
