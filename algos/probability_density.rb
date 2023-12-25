@@ -16,7 +16,7 @@ module ProbabilityDensity
       row, col = target
 
       puts
-      puts "Targeting row #{row}, col #{col}, has the highest probability of #{(probability_grid[row][col] * 100).round(2)}"
+      puts "Targeting Row #{row}, Col #{col}, has the highest probability of #{(probability_grid[row][col] * 100).round(2)}"
 
       response = api.fire(row, col)
       update_probability_grid(probability_grid, row, col, response["result"])

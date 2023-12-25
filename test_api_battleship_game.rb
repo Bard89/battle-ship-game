@@ -46,7 +46,7 @@ game = TestBattleshipGame.new($config)
 # to see the response in a nice format
 # ap response.parsed_response
 
-# to see the current state of the grid\
+# to see the current state of the grid
 game.print_grid(response.parsed_response["grid"])
 
 # reset_response = game.test_reset

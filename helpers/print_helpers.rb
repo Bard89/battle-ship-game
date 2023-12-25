@@ -40,6 +40,46 @@ module PrintHelpers
     # sleep(0.3)
   end
 
+  def print_target_grid(grid_string, target_row, target_column)
+    purple_bold_start = "\e[1m\e[38;5;198m" # ANSI code for purple bold text
+    color_end = "\e[0m"
+
+    # Create the header with bold purple for the target column
+    header_spacing = ' ' * 1
+    column_headers = (0...Constants::GRID_SIZE).map do |col|
+      header = col.to_s.center(5)
+      # Apply purple bold to the target column header
+      header = purple_bold_start + header + color_end if col == target_column
+      header
+    end.join(header_spacing)  # Join headers with spacing
+
+    # Include offset for the row labels
+    puts (' ' * 6) + column_headers
+
+    grid_string.chars.each_slice(Constants::GRID_SIZE).with_index do |row, index|
+      # Apply bold purple to the row label if it is the target row
+      formatted_row_number = format('Row %-3d', index)
+      formatted_row_number = purple_bold_start + formatted_row_number + color_end if index == target_row
+
+      colored_row = row.map.with_index do |cell, col|
+        colored_cell = colorize_ship(cell)
+
+        # Apply purple bold formatting if the cell is in the target row or column
+        if index == target_row || col == target_column
+          colored_cell = purple_bold_start + colored_cell + color_end
+        end
+
+        # Adjust the padding for the cell content
+        visible_length = colored_cell.gsub(/\e\[\d+(;\d+)*m/, '').length
+        colored_cell.ljust(5 + colored_cell.length - visible_length)
+      end.join(' ')
+
+      puts "#{formatted_row_number} #{colored_row}"
+    end
+    nil
+    # sleep(0.3)
+  end
+
   def colorize_ship(cell)
     # ANSI code for bold text is \e[1m
     bold_start = "\e[1m"

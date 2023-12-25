@@ -48,7 +48,6 @@ class MockBattleshipAPI
       "avengerAvailable" => avengerAvailable
     }
 
-    puts self.print_grid(parsed_response['grid'])
     ap parsed_response
 
     parsed_response
