@@ -1,10 +1,10 @@
+require_relative '../helpers/print_helpers'
+require_relative '../helpers/algo_helpers'
 require_relative '../map_generator.rb'
 require_relative '../constants.rb'
 require_relative '../battleship_api_mock.rb'
-require 'byebug'
 
-require_relative '../helpers/print_helpers'
-require_relative '../helpers/algo_helpers'
+require 'byebug'
 
 module ModifiedProbabilityDensity
   include PrintHelpers
@@ -227,11 +227,10 @@ module ModifiedProbabilityDensity
     target_position
   end
 
-
   def update_adjacent_cells(probability_grid, row, col, action)
     (-1..1).each do |row_offset|
       (-1..1).each do |col_offset|
-        next unless valid_coordinates?(row + row_offset, col + col_offset)
+        next unless AlgoHelpers.valid_coordinates?(row + row_offset, col + col_offset)
         next if row_offset == 0 && col_offset == 0  # Skip the cell that was just targeted
 
         case action
@@ -247,8 +246,8 @@ module ModifiedProbabilityDensity
   def update_based_on_ship_patterns(probability_grid, row, col)
     # Increase probability of cells in a line extending from the hit cell
     [-1, 1].each do |offset|
-      probability_grid[row + offset][col] += Constants::SHIP_PATTERN_PROBABILITY_INCREMENT if valid_coordinates?(row + offset, col)
-      probability_grid[row][col + offset] += Constants::SHIP_PATTERN_PROBABILITY_INCREMENT if valid_coordinates?(row, col + offset)
+      probability_grid[row + offset][col] += Constants::SHIP_PATTERN_PROBABILITY_INCREMENT if AlgoHelpers.valid_coordinates?(row + offset, col)
+      probability_grid[row][col + offset] += Constants::SHIP_PATTERN_PROBABILITY_INCREMENT if AlgoHelpers.valid_coordinates?(row, col + offset)
     end
   end
 
@@ -274,7 +273,7 @@ module ModifiedProbabilityDensity
         absolute_col = col + c_offset
 
         # Decrease the probability if the cell is within the grid boundaries
-        if valid_coordinates?(absolute_row, absolute_col)
+        if AlgoHelpers.valid_coordinates?(absolute_row, absolute_col)
           grid[absolute_row][absolute_col] -= Constants::SHIP_PROBABILITY_DECREMENT
         end
       end
@@ -332,7 +331,7 @@ module ModifiedProbabilityDensity
   # Get a list of adjacent cells
   def adjacent_cells(row, col)
     [[row - 1, col], [row + 1, col], [row, col - 1], [row, col + 1]].select do |adj_row, adj_col|
-      valid_coordinates?(adj_row, adj_col)
+      AlgoHelpers.valid_coordinates?(adj_row, adj_col)
     end
   end
 
@@ -347,8 +346,4 @@ module ModifiedProbabilityDensity
       end
     end
   end
-end
-
-def valid_coordinates?(row, column)
-  row.between?(0, Constants::GRID_SIZE - 1) && column.between?(0, Constants::GRID_SIZE - 1)
 end

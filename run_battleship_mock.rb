@@ -3,6 +3,7 @@ require_relative 'algos/brute_force.rb'
 require_relative 'algos/hunt_and_target.rb'
 require_relative 'algos/probability_density.rb'
 require_relative 'algos/modified_probability_density.rb'
+require_relative 'helpers/algo_helpers.rb'
 require_relative 'constants.rb'
 
 def run_algorithm(algorithm, runs)
@@ -10,7 +11,7 @@ def run_algorithm(algorithm, runs)
   total_time = 0
 
   runs.times do
-    api = MockBattleshipAPI.new
+    api = BattleshipAPIMock.new
 
     start_time = Time.now
     algorithm.call(api)
@@ -32,7 +33,7 @@ runs = 1
 # total_moves_brute_force, avg_moves_brute_force, time_brute_force, total_time_brute_force = run_algorithm(BruteForce.method(:brute_force), runs)
 # total_moves_hunt_and_target, avg_moves_hunt_and_target, time_hunt_and_target, total_time_hunt_and_target = run_algorithm(HuntAndTarget.method(:hunt_and_target), runs)
 # total_moves_probability_density, avg_moves_probability_density, time_probability_density, total_time_probability_density = run_algorithm(ProbabilityDensity.method(:probability_density), runs)
-total_moves_solver, avg_moves_solver, time_solver, total_time_solver = run_algorithm(ModifiedProbabilityDensity.method(:probability_density), runs)
+total_moves_modified_probability_density, avg_moves_modified_probability_density, time_modified_probability_density, total_time_modified_probability_density = run_algorithm(ModifiedProbabilityDensity.method(:probability_density), runs)
 
 
 # Display stats for each algorithm
@@ -58,4 +59,4 @@ end
 # display_stats("BRUTE FORCE", total_moves_brute_force, avg_moves_brute_force, time_brute_force, total_time_brute_force, runs)
 # display_stats("Hunt and Target", total_moves_hunt_and_target, avg_moves_hunt_and_target, time_hunt_and_target, total_time_hunt_and_target, runs)
 # display_stats("PROBABILITY DENSITY", total_moves_probability_density, avg_moves_probability_density, time_probability_density, total_time_probability_density, runs)
-display_stats("BATTLESHIP SOLVER", total_moves_solver, avg_moves_solver, time_solver, total_time_solver, runs)
+display_stats("MODIFIED PROBABILITY DENSITY", total_moves_modified_probability_density, avg_moves_modified_probability_density, time_modified_probability_density, total_time_modified_probability_density, runs)

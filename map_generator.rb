@@ -4,6 +4,7 @@ require_relative 'helpers/algo_helpers.rb'
 require_relative 'constants.rb'
 
 class MapGenerator
+  include AlgoHelpers
   include PrintHelpers
   include Constants
 

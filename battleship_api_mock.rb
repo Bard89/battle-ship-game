@@ -12,9 +12,11 @@ require 'set'
 require 'awesome_print'
 
 
-class MockBattleshipAPI
+class BattleshipAPIMock
+  include AlgoHelpers
   include PrintHelpers
   include Constants
+  include ModifiedProbabilityDensity
 
   attr_reader :move_count, :shots, :grid, :avengerAvailable, :irregular_ship_cells
 
