@@ -40,14 +40,12 @@ module PrintHelpers
     # sleep(0.3)
   end
 
-  # Helper method to apply color and bold formatting
   def apply_formatting(text, apply_format, color_code)
     format_start = "\e[1m\e[38;5;#{color_code}m" # Start color and bold
-    format_end = "\e[0m" # End formatting
+    format_end = "\e[0m"
     apply_format ? "#{format_start}#{text}#{format_end}" : text
   end
 
-  # Helper method to create a formatted header or row label
   def formatted_header_or_label(text, is_target, spacing, color_code)
     formatted_text = text.to_s.center(spacing)
     apply_formatting(formatted_text, is_target, color_code)
