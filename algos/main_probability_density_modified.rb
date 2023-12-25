@@ -65,8 +65,7 @@ module MainProbabilityDensityModified
         purple_bold_start = "\e[1m\e[38;5;198m"
         purple_bold_end = "\e[0m"
 
-        puts "#{purple_bold_start}Targetted#{purple_bold_end}"
-        puts
+        puts "#{purple_bold_start}Targeted#{purple_bold_end}"
         api.print_target_grid(result['grid'], target_row, target_col)
         puts "Irregular ship probability grid:"
         api.print_probability_grid(probability_grid_irregular)
