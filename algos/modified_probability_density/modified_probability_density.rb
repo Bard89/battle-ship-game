@@ -60,6 +60,7 @@ module ModifiedProbabilityDensity
         update_probability(probability_grid_regular, target_row, target_col, result['result'])
 
         process_hit_result(result, target_row, target_col, probability_grid_irregular)
+        process_hit_result(result, target_row, target_col, probability_grid_regular)
 
         targeted_cells.add([target_row, target_col])
 
@@ -67,11 +68,13 @@ module ModifiedProbabilityDensity
         purple_bold_end = "\e[0m"
         puts "#{purple_bold_start}Targeted#{purple_bold_end}"
         api.print_target_grid(result['grid'], target_row, target_col)
-        puts "Irregular ship probability grid:"
-        print_probability_grid(probability_grid_irregular)
-        puts
-        puts "Regular ship probability grid:"
-        print_probability_grid(probability_grid_regular)
+        if api.avengerAvailable
+          puts "Regular ship probability grid:"
+          print_probability_grid(probability_grid_regular)
+        else
+          puts "Irregular ship probability grid:"
+          print_probability_grid(probability_grid_irregular)
+        end
     end
   end
 

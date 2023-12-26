@@ -47,6 +47,7 @@ def display_stats(algo_name, total_moves, avg_moves, avg_time, total_time, runs)
   puts "To beat the best you need to get #{improvement_needed} less moves by: #{(improvement_needed / Constants::CURRENT_BEST_200_GAMES_RUN.to_f * 100).round(1)}%"
   improvement_percent = -((Constants::CURRENT_BEST_200_GAMES_RUN - (total_moves / runs) * 200) / Constants::CURRENT_BEST_200_GAMES_RUN.to_f).round(1) * 100
   puts "To beat the best you need to improve your algo by #{improvement_percent.round(1)}%"
+  puts "The probability density expected outcome without avengers is approx 12000 (maybe a bit more because this is with confirmation of sunk ships, which we don't have)"
   puts "-----------------------------------------------------------"
   puts "Total moves: #{total_moves}"
   puts "Average moves: #{avg_moves}"
