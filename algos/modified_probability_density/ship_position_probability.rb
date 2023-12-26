@@ -5,6 +5,12 @@ module ShipPositionProbability
     Array.new(grid_size) { Array.new(grid_size, initial_value) }
   end
 
+  def create_irregular_ship_probability_grid
+    grid = initialize_probability_grid
+    update_grid_with_irregular_ship_probabilities(grid)
+    grid
+  end
+
   def update_grid_with_irregular_ship_probabilities(grid)
     Constants::GRID_SIZE.times do |row|
       Constants::GRID_SIZE.times do |col|
