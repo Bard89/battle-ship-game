@@ -1,6 +1,21 @@
 require_relative '../../constants.rb'
 
 module ShipSunkOrNotProbability
+  @hit_ships = {}
+  @confirmed_sunk_ships = []
+
+  def process_hit_result(result, target_row, target_col, probability_grid_irregular)
+    if result['result']
+      ship_hits = record_hit(target_row, target_col)
+
+      if ship_sunk?(ship_hits, probability_grid_irregular)
+        update_for_sunk_ship(ship_hits, probability_grid_irregular)
+        @confirmed_sunk_ships.concat(ship_hits)
+        @hit_ships.delete(ship_hits.object_id)
+      end
+    end
+  end
+
   # Record a hit and determine if it's part of a known ship
   def record_hit(row, col)
     # Check if this hit connects to an existing ship

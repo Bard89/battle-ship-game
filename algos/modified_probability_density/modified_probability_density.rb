@@ -17,9 +17,6 @@ module ModifiedProbabilityDensity
   extend ShipSunkOrNotProbability
   include Constants
 
-  @hit_ships = {}
-  @confirmed_sunk_ships = []
-
   module_function
 
   def probability_density(api)
@@ -55,20 +52,12 @@ module ModifiedProbabilityDensity
 
         targeted_cells.add([target_row, target_col])
 
-
         result = api.fire(target_row, target_col)
+
         update_probability(probability_grid_irregular, target_row, target_col, result['result'])
         update_probability(probability_grid_combined, target_row, target_col, result['result'])
 
-
-        if result['result']
-          ship_hits = record_hit(target_row, target_col)
-          if ship_sunk?(ship_hits, probability_grid_irregular)
-            update_for_sunk_ship(ship_hits, probability_grid_irregular)
-            @confirmed_sunk_ships.concat(ship_hits)
-            @hit_ships.delete(ship_hits.object_id)
-          end
-        end
+        process_hit_result(result, target_row, target_col, probability_grid_irregular)
 
         targeted_cells.add([target_row, target_col])
 
