@@ -25,18 +25,26 @@ module ModifiedProbabilityDensity
     targeted_cells = Set.new
 
     probability_grid_irregular = initialize_probability_grid
-    probability_grid_combined = initialize_probability_grid
+    # probability_grid_regular = initialize_probability_grid
+    # probability_grid_combined = initialize_probability_grid
+    probability_grid_combined = create_regular_ship_probability_grid
 
     update_grid_with_irregular_ship_probabilities(probability_grid_irregular)
+    # update_grid_with_regular_ship_probabilities(probability_grid_regular)
+
     # update_grid_with_regular_ship_probabilities(probability_grid_combined)
-    update_grid_with_irregular_ship_probabilities(probability_grid_combined)
+    # update_grid_with_irregular_ship_probabilities(probability_grid_combined)
+    # update_grid_with_irregular_ship_probabilities(probability_grid_regular)
 
     puts "Irregular ship probability grid:"
-    print_probability_grid(probability_grid_combined)
-    puts "Regular ship probability grid:"
     print_probability_grid(probability_grid_irregular)
+    puts "Regular ship probability grid:"
+    print_probability_grid(probability_grid_combined)
+    # puts "Combined ship probability grid:"
+    # print_probability_grid(probability_grid_combined)
 
 
+    byebug
     until api.finished? # until the game is over
       target_row, target_col = nil
 
