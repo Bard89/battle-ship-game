@@ -42,9 +42,7 @@ module ModifiedProbabilityDensity
     print_probability_grid(probability_grid_combined)
     # puts "Combined ship probability grid:"
     # print_probability_grid(probability_grid_combined)
-
-
-    byebug
+    
     until api.finished? # until the game is over
       target_row, target_col = nil
 

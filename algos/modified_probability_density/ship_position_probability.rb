@@ -5,7 +5,6 @@ module ShipPositionProbability
     Array.new(grid_size) { Array.new(grid_size, initial_value) }
   end
 
-  # irregular ship initial probability grid
   def update_grid_with_irregular_ship_probabilities(grid)
     Constants::GRID_SIZE.times do |row|
       Constants::GRID_SIZE.times do |col|
@@ -13,7 +12,7 @@ module ShipPositionProbability
           ship_shape = orientation == :horizontal ? Constants::IRREGULAR_SHIP_HORIZONTAL : Constants::IRREGULAR_SHIP_VERTICAL
 
           if can_whole_ship_be_here?(row, col, ship_shape)
-            update_probability_for_irregular_ship_position(grid, row, col, ship_shape, Constants::SHIP_POSITION_PROBABILITY_INCREMENT, orientation)
+            update_probability_for_irregular_ship_position(grid, row, col, ship_shape, Constants::IRREGULAR_SHIP_POSITION_PROBABILITY_INCREMENT, orientation)
           end
         end
       end
@@ -64,7 +63,7 @@ module ShipPositionProbability
     (0...quarter_size).each do |row|
       (0...quarter_size).each do |col|
         increment = [row + 1, col + 1].min
-        quarter_grid[row][col] = increment * Constants::SHIP_POSITION_PROBABILITY_INCREMENT
+        quarter_grid[row][col] = increment * Constants::REGULAR_SHIP_POSITION_PROBABILITY_INCREMENT
       end
     end
 

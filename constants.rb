@@ -25,7 +25,8 @@ module Constants
   AVENGERS = %w[hulk, ironman, thor]
 
   # probability changes for the probability_density algo
-  SHIP_POSITION_PROBABILITY_INCREMENT = 0.2
+  IRREGULAR_SHIP_POSITION_PROBABILITY_INCREMENT = 0.2
+  REGULAR_SHIP_POSITION_PROBABILITY_INCREMENT = 0.2
 
   SHIP_PLACEMENT_PROBABILITY_DECREMENT = 0.2
 
