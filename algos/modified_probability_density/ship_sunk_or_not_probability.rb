@@ -1,9 +1,6 @@
 require_relative '../../constants.rb'
 
 module ShipSunkOrNotProbability
-  @hit_ships = {}
-  @confirmed_sunk_ships = []
-
   def process_hit_result(result, target_row, target_col, probability_grid_irregular)
     if result['result']
       ship_hits = record_hit(target_row, target_col)

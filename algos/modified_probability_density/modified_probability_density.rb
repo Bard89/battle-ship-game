@@ -20,6 +20,8 @@ module ModifiedProbabilityDensity
   module_function
 
   def probability_density(api)
+    @hit_ships = {}
+    @confirmed_sunk_ships = []
     targeted_cells = Set.new
 
     probability_grid_irregular = initialize_probability_grid
