@@ -5,6 +5,7 @@ require_relative '../../constants.rb'
 require_relative '../../battleship_api_mock.rb'
 require_relative 'ship_position_probability.rb'
 require_relative 'hit_and_miss_probability.rb'
+require_relative 'ship_sunk_or_not_probability.rb'
 
 require 'byebug'
 
@@ -13,6 +14,7 @@ module ModifiedProbabilityDensity
   extend PrintHelpers
   extend ShipPositionProbability
   extend HitAndMissProbability
+  extend ShipSunkOrNotProbability
   include Constants
 
   @hit_ships = {}
@@ -106,20 +108,6 @@ module ModifiedProbabilityDensity
     target_position
   end
 
-  def overlaps_missed_cell?(ship_placement, row, col, missed_row, missed_col)
-    ship_placement.each_with_index do |ship_row, r_offset|
-      ship_row.each_with_index do |cell, c_offset|
-        # Calculate the absolute position of the cell in the grid
-        absolute_row = row + r_offset
-        absolute_col = col + c_offset
-
-        # Check if the absolute position matches the missed cell
-        return true if absolute_row == missed_row && absolute_col == missed_col
-      end
-    end
-    false
-  end
-
   # Record a hit and determine if it's part of a known ship
   def record_hit(row, col)
     # Check if this hit connects to an existing ship
@@ -138,34 +126,5 @@ module ModifiedProbabilityDensity
   # Check if two cells are adjacent (diagonals not considered)
   def adjacent?(row1, col1, row2, col2)
     (row1 == row2 && (col1 - col2).abs == 1) || (col1 == col2 && (row1 - row2).abs == 1)
-  end
-
-  # Determine if the ship is sunk
-  def ship_sunk?(ship_hits, probability_grid)
-    ship_hits.all? do |hit_row, hit_col|
-      # If all adjacent cells are either hit or have a probability of 0, the ship is considered sunk
-      adjacent_cells(hit_row, hit_col).all? do |adj_row, adj_col|
-        probability_grid[adj_row][adj_col] == 0 || @confirmed_sunk_ships.include?([adj_row, adj_col])
-      end
-    end
-  end
-
-  # Get a list of adjacent cells
-  def adjacent_cells(row, col)
-    [[row - 1, col], [row + 1, col], [row, col - 1], [row, col + 1]].select do |adj_row, adj_col|
-      valid_coordinates?(adj_row, adj_col)
-    end
-  end
-
-  # Method to update the probability grid for a sunk ship
-  def update_for_sunk_ship(ship_hits, probability_grid)
-    ship_hits.each do |hit_row, hit_col|
-      # Set the probability of the hit cells to 0
-      probability_grid[hit_row][hit_col] = 0
-      # Also set the probability of the adjacent cells to 0
-      adjacent_cells(hit_row, hit_col).each do |adj_row, adj_col|
-        probability_grid[adj_row][adj_col] = 0 unless @confirmed_sunk_ships.include?([adj_row, adj_col])
-      end
-    end
   end
 end

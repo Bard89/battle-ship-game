@@ -68,3 +68,17 @@ def decrease_probability_for_ship_placement(grid, row, col, ship_placement)
     end
   end
 end
+
+def overlaps_missed_cell?(ship_placement, row, col, missed_row, missed_col)
+  ship_placement.each_with_index do |ship_row, r_offset|
+    ship_row.each_with_index do |cell, c_offset|
+      # Calculate the absolute position of the cell in the grid
+      absolute_row = row + r_offset
+      absolute_col = col + c_offset
+
+      # Check if the absolute position matches the missed cell
+      return true if absolute_row == missed_row && absolute_col == missed_col
+    end
+  end
+  false
+end
