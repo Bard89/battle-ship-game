@@ -1,20 +1,22 @@
 require_relative 'map_generator.rb'
 require_relative 'helpers/print_helpers.rb'
-require_relative 'helpers/solver_helpers.rb'
+require_relative 'helpers/algo_helpers.rb'
 require_relative 'constants.rb'
 require_relative 'algos/brute_force.rb'
 require_relative 'algos/hunt_and_target.rb'
 require_relative 'algos/probability_density.rb'
-require_relative 'algos/main_probability_density_modified.rb'
+require_relative 'algos/modified_probability_density/modified_probability_density.rb'
 
 require 'byebug'
 require 'set'
 require 'awesome_print'
 
 
-class MockBattleshipAPI
+class BattleshipAPIMock
+  include AlgoHelpers
   include PrintHelpers
   include Constants
+  include ModifiedProbabilityDensity
 
   attr_reader :move_count, :shots, :grid, :avengerAvailable, :irregular_ship_cells
 

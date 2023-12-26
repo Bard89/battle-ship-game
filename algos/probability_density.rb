@@ -4,7 +4,8 @@ require_relative '../battleship_api_mock.rb'
 require 'byebug'
 
 module ProbabilityDensity
-  include PrintHelpers
+  extend PrintHelpers
+  extend AlgoHelpers
   include Constants
 
   module_function
@@ -22,7 +23,7 @@ module ProbabilityDensity
       update_probability_grid(probability_grid, row, col, response["result"])
 
       puts
-      api.print_probability_grid(probability_grid)
+      print_probability_grid(probability_grid)
       puts "move count: #{response["moveCount"]}"
     end
   end
