@@ -24,18 +24,18 @@ module ModifiedProbabilityDensity
     @confirmed_sunk_ships = []
     targeted_cells = Set.new
 
-    probability_grid_irregular = initialize_probability_grid
-    probability_grid_combined = initialize_probability_grid
+    probability_grid_irregular = create_irregular_ship_probability_grid
+    probability_grid_regular = create_regular_ship_probability_grid
 
-    update_grid_with_irregular_ship_probabilities(probability_grid_irregular)
-    # update_grid_with_regular_ship_probabilities(probability_grid_combined)
-    update_grid_with_irregular_ship_probabilities(probability_grid_combined)
+    # update_grid_with_irregular_ship_probabilities(probability_grid_regular)
+    # probability_grid_combined = probability_grid_regular
 
     puts "Irregular ship probability grid:"
-    print_probability_grid(probability_grid_combined)
-    puts "Regular ship probability grid:"
     print_probability_grid(probability_grid_irregular)
-
+    puts "Regular ship probability grid:"
+    print_probability_grid(probability_grid_regular)
+    # puts "Combined ship probability grid:"
+    # print_probability_grid(probability_grid_combined)
 
     until api.finished? # until the game is over
       target_row, target_col = nil
@@ -43,7 +43,7 @@ module ModifiedProbabilityDensity
     # just to optimize the game, to update the probabilities right
     # until api.avengerAvailable
       if api.avengerAvailable # if the biggest ship is sunk, use the avenger
-        target_row, target_col = target_ship(probability_grid_combined, targeted_cells)
+        target_row, target_col = target_ship(probability_grid_regular, targeted_cells)
       else
         target_row, target_col = target_ship(probability_grid_irregular, targeted_cells)
       end
@@ -57,7 +57,7 @@ module ModifiedProbabilityDensity
         result = api.fire(target_row, target_col)
 
         update_probability(probability_grid_irregular, target_row, target_col, result['result'])
-        update_probability(probability_grid_combined, target_row, target_col, result['result'])
+        update_probability(probability_grid_regular, target_row, target_col, result['result'])
 
         process_hit_result(result, target_row, target_col, probability_grid_irregular)
 
@@ -71,7 +71,7 @@ module ModifiedProbabilityDensity
         print_probability_grid(probability_grid_irregular)
         puts
         puts "Regular ship probability grid:"
-        print_probability_grid(probability_grid_combined)
+        print_probability_grid(probability_grid_regular)
     end
   end
 

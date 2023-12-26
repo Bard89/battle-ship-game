@@ -63,7 +63,7 @@ def decrease_probability_for_ship_placement(grid, row, col, ship_placement)
 
       # Decrease the probability if the cell is within the grid boundaries
       if valid_coordinates?(absolute_row, absolute_col)
-        grid[absolute_row][absolute_col] -= Constants::SHIP_PROBABILITY_DECREMENT
+        grid[absolute_row][absolute_col] -= Constants::SHIP_PLACEMENT_PROBABILITY_DECREMENT
       end
     end
   end
