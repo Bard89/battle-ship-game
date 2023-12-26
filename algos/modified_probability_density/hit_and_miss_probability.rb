@@ -3,29 +3,27 @@ require_relative '../../constants.rb'
 module HitAndMissProbability
   def update_probability(probability_grid, row, col, hit)
     update_adjacent_cells(probability_grid, row, col, hit)
-    update_probabilities_after_miss(probability_grid, row, col, Constants::REGULAR_SHIP_SHAPES) unless hit
-    update_based_on_ship_patterns(probability_grid, row, col) if hit
+
+    if hit
+      update_based_on_ship_pattern(probability_grid, row, col)
+    else
+      update_after_miss(probability_grid, row, col, Constants::REGULAR_SHIP_SHAPES)
+    end
   end
 
   def update_adjacent_cells(probability_grid, row, col, hit)
-    action = hit ? :increase : :decrease
-
     (-1..1).each do |row_offset|
       (-1..1).each do |col_offset|
         next unless valid_coordinates?(row + row_offset, col + col_offset)
         next if row_offset == 0 && col_offset == 0  # Skip the cell that was just targeted
 
-        case action
-        when :increase
-          probability_grid[row + row_offset][col + col_offset] += Constants::ADJACENT_CELL_PROBABILITY_INCREMENT
-        when :decrease
-          probability_grid[row + row_offset][col + col_offset] -= Constants::ADJACENT_CELL_PROBABILITY_DECREMENT
-        end
+        increment = hit ? Constants::ADJACENT_CELL_PROBABILITY_INCREMENT : -Constants::ADJACENT_CELL_PROBABILITY_DECREMENT
+        probability_grid[row + row_offset][col + col_offset] += increment
       end
     end
   end
 
-  def update_probabilities_after_miss(grid, missed_row, missed_col, ship_shapes)
+  def update_after_miss(grid, missed_row, missed_col, ship_shapes)
     ship_shapes.each do |ship_shape|
       Constants::GRID_SIZE.times do |row|
         Constants::GRID_SIZE.times do |col|
@@ -62,7 +60,7 @@ module HitAndMissProbability
     end
   end
 
-  def update_based_on_ship_patterns(probability_grid, row, col)
+  def update_based_on_ship_pattern(probability_grid, row, col)
     # Increase probability of cells in a line extending from the hit cell
     [-1, 1].each do |offset|
       probability_grid[row + offset][col] += Constants::SHIP_PATTERN_PROBABILITY_INCREMENT if valid_coordinates?(row + offset, col)
