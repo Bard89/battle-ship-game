@@ -2,7 +2,7 @@ require_relative 'battleship_api_mock.rb'
 require_relative 'algos/brute_force.rb'
 require_relative 'algos/hunt_and_target.rb'
 require_relative 'algos/probability_density.rb'
-require_relative 'algos/modified_probability_density.rb'
+require_relative 'algos/modified_probability_density/modified_probability_density.rb'
 require_relative 'helpers/algo_helpers.rb'
 require_relative 'constants.rb'
 
