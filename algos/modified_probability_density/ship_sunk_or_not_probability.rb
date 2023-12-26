@@ -1,6 +1,26 @@
 require_relative '../../constants.rb'
 
 module ShipSunkOrNotProbability
+  # Record a hit and determine if it's part of a known ship
+  def record_hit(row, col)
+    # Check if this hit connects to an existing ship
+    @hit_ships.each do |hits|
+      if hits.any? { |hit_row, hit_col| adjacent?(hit_row, hit_col, row, col) }
+        hits << [row, col]
+        return hits
+      end
+    end
+    # Otherwise, start tracking a new ship
+    new_ship_hits = [[row, col]]
+    @hit_ships[new_ship_hits.object_id] = new_ship_hits
+    new_ship_hits
+  end
+
+  # Check if two cells are adjacent (diagonals not considered)
+  def adjacent?(row1, col1, row2, col2)
+    (row1 == row2 && (col1 - col2).abs == 1) || (col1 == col2 && (row1 - row2).abs == 1)
+  end
+
   # Determine if the ship is sunk
   def ship_sunk?(ship_hits, probability_grid)
     ship_hits.all? do |hit_row, hit_col|

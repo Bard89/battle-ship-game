@@ -72,10 +72,8 @@ module ModifiedProbabilityDensity
 
         targeted_cells.add([target_row, target_col])
 
-
         purple_bold_start = "\e[1m\e[38;5;198m"
         purple_bold_end = "\e[0m"
-
         puts "#{purple_bold_start}Targeted#{purple_bold_end}"
         api.print_target_grid(result['grid'], target_row, target_col)
         puts "Irregular ship probability grid:"
@@ -106,25 +104,5 @@ module ModifiedProbabilityDensity
     end
 
     target_position
-  end
-
-  # Record a hit and determine if it's part of a known ship
-  def record_hit(row, col)
-    # Check if this hit connects to an existing ship
-    @hit_ships.each do |hits|
-      if hits.any? { |hit_row, hit_col| adjacent?(hit_row, hit_col, row, col) }
-        hits << [row, col]
-        return hits
-      end
-    end
-    # Otherwise, start tracking a new ship
-    new_ship_hits = [[row, col]]
-    @hit_ships[new_ship_hits.object_id] = new_ship_hits
-    new_ship_hits
-  end
-
-  # Check if two cells are adjacent (diagonals not considered)
-  def adjacent?(row1, col1, row2, col2)
-    (row1 == row2 && (col1 - col2).abs == 1) || (col1 == col2 && (row1 - row2).abs == 1)
   end
 end
