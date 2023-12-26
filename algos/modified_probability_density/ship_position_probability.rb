@@ -1,6 +1,6 @@
 require_relative '../../constants.rb'
 
-module ShipProbability
+module ShipPositionProbability
   # Initialize the probability grid for the game with 0s, will be updated according to the ship shapes
   # first for the irregular ship and then for the regular ships
   def initialize_probability_grid
