@@ -9,6 +9,8 @@ require_relative 'constants.rb'
 require 'parallel'
 require 'benchmark'
 
+# great for algo debugging but slow
+# to run it enable all the printouts to see what's going on
 def run_algorithm(algorithm, runs)
   total_moves = 0
   total_time = 0
@@ -30,36 +32,10 @@ def run_algorithm(algorithm, runs)
   [total_moves, average_moves, average_time, total_time]
 end
 
-def run_algorithm_in_standard_parallel(algorithm, runs)
-  total_moves = 0
-  threads = []
-
-  start_time = Time.now
-
-  runs.times do
-    threads << Thread.new do
-      api = BattleshipAPIMock.new
-
-      algorithm.call(api)
-
-      Thread.current[:moves] = api.move_count
-    end
-  end
-
-  threads.each do |t|
-    t.join
-    total_moves += t[:moves]
-  end
-
-  end_time = Time.now
-  total_time = end_time - start_time
-
-  average_moves = total_moves.to_f / runs
-  average_time = total_time / runs
-
-  [total_moves, average_moves, average_time, total_time]
-end
-
+# not good for debugging but useful later for algo comparison and for the probability constants optimisation
+# basically runs order of magnitude faster than without parallel processing
+# to run it disable all the printouts to achieve the best performance
+# ( also probably the awesome_print causes that it tries to print on your printer while running in the terminal ... :D)
 def run_algorithm_using_gem_parallel(algorithm, runs)
   results = nil
   total_benchmark_time = Benchmark.measure do
@@ -85,16 +61,14 @@ def run_algorithm_using_gem_parallel(algorithm, runs)
   [total_moves, average_moves, average_time, total_benchmark_time.real]
 end
 
-
-
 # in the end change this to 200 runs to simulate the real game
-runs = 200
+runs = 1
 
 # total_moves_brute_force, avg_moves_brute_force, time_brute_force, total_time_brute_force = run_algorithm(BruteForce.method(:brute_force), runs)
 # total_moves_hunt_and_target, avg_moves_hunt_and_target, time_hunt_and_target, total_time_hunt_and_target = run_algorithm(HuntAndTarget.method(:hunt_and_target), runs)
 # total_moves_probability_density, avg_moves_probability_density, time_probability_density, total_time_probability_density = run_algorithm(ProbabilityDensity.method(:probability_density), runs)
+
 total_moves_modified_probability_density, avg_moves_modified_probability_density, time_modified_probability_density, total_time_modified_probability_density = run_algorithm(ModifiedProbabilityDensity.method(:probability_density), runs)
-# total_moves_modified_probability_density, avg_moves_modified_probability_density, time_modified_probability_density, total_time_modified_probability_density = run_algorithm_in_standard_parallel(ModifiedProbabilityDensity.method(:probability_density), runs)
 # total_moves_modified_probability_density, avg_moves_modified_probability_density, time_modified_probability_density, total_time_modified_probability_density = run_algorithm_using_gem_parallel(ModifiedProbabilityDensity.method(:probability_density), runs)
 
 
@@ -122,4 +96,5 @@ end
 # display_stats("BRUTE FORCE", total_moves_brute_force, avg_moves_brute_force, time_brute_force, total_time_brute_force, runs)
 # display_stats("Hunt and Target", total_moves_hunt_and_target, avg_moves_hunt_and_target, time_hunt_and_target, total_time_hunt_and_target, runs)
 # display_stats("PROBABILITY DENSITY", total_moves_probability_density, avg_moves_probability_density, time_probability_density, total_time_probability_density, runs)
+
 display_stats("MODIFIED PROBABILITY DENSITY", total_moves_modified_probability_density, avg_moves_modified_probability_density, time_modified_probability_density, total_time_modified_probability_density, runs)
