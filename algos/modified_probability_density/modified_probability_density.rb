@@ -56,11 +56,14 @@ module ModifiedProbabilityDensity
 
         result = api.fire(target_row, target_col)
 
-        update_probability(probability_grid_irregular, target_row, target_col, result['result'])
-        update_probability(probability_grid_regular, target_row, target_col, result['result'])
+        update_adjacent_cells(probability_grid_irregular, target_row, target_col, result['result'])
+        update_adjacent_cells(probability_grid_regular, target_row, target_col, result['result'])
 
-        process_hit_result(result, target_row, target_col, probability_grid_irregular)
-        process_hit_result(result, target_row, target_col, probability_grid_regular)
+        update_hit_or_miss_probability(probability_grid_irregular, target_row, target_col, result['result'])
+        update_hit_or_miss_probability(probability_grid_regular, target_row, target_col, result['result'])
+
+        update_ship_sunk_or_not(result, target_row, target_col, probability_grid_irregular)
+        update_ship_sunk_or_not(result, target_row, target_col, probability_grid_regular)
 
         targeted_cells.add([target_row, target_col])
 
