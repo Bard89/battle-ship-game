@@ -13,19 +13,16 @@ require 'benchmark'
 # to run it enable all the printouts to see what's going on
 def run_algorithm(algorithm, runs)
   total_moves = 0
-  total_time = 0
 
-  runs.times do
-    api = BattleshipAPIMock.new
-
-    start_time = Time.now
-    algorithm.call(api)
-    end_time = Time.now
-
-    total_moves += api.move_count
-    total_time += end_time - start_time
+  total_benchmark_time = Benchmark.measure do
+    runs.times do
+      api = BattleshipAPIMock.new
+      algorithm.call(api)
+      total_moves += api.move_count
+    end
   end
 
+  total_time = total_benchmark_time.real
   average_moves = total_moves.to_f / runs
   average_time = total_time / runs
 
@@ -38,31 +35,25 @@ end
 # ( also probably the awesome_print causes that it tries to print on your printer while running in the terminal ... :D)
 def run_algorithm_using_gem_parallel(algorithm, runs)
   results = nil
+
   total_benchmark_time = Benchmark.measure do
     results = Parallel.map(1..runs, in_processes: Parallel.processor_count) do
       api = BattleshipAPIMock.new
-
-      start_time = Time.now
       algorithm.call(api)
-      end_time = Time.now
-
-      move_count = api.move_count
-      time = end_time - start_time
-      [move_count, time]
+      api.move_count
     end
   end
 
-  total_moves = results.sum { |result| result[0] }
-  total_time = results.sum { |result| result[1] }
-
+  total_time = total_benchmark_time.real
+  total_moves = results.sum
   average_moves = total_moves.to_f / runs
   average_time = total_time / runs
 
-  [total_moves, average_moves, average_time, total_benchmark_time.real]
+  [total_moves, average_moves, average_time, total_time]
 end
 
 # in the end change this to 200 runs to simulate the real game
-runs = 1
+runs = 3
 
 # total_moves_brute_force, avg_moves_brute_force, time_brute_force, total_time_brute_force = run_algorithm(BruteForce.method(:brute_force), runs)
 # total_moves_hunt_and_target, avg_moves_hunt_and_target, time_hunt_and_target, total_time_hunt_and_target = run_algorithm(HuntAndTarget.method(:hunt_and_target), runs)
@@ -70,7 +61,6 @@ runs = 1
 
 total_moves_modified_probability_density, avg_moves_modified_probability_density, time_modified_probability_density, total_time_modified_probability_density = run_algorithm(ModifiedProbabilityDensity.method(:probability_density), runs)
 # total_moves_modified_probability_density, avg_moves_modified_probability_density, time_modified_probability_density, total_time_modified_probability_density = run_algorithm_using_gem_parallel(ModifiedProbabilityDensity.method(:probability_density), runs)
-
 
 # Display stats for each algorithm
 def display_stats(algo_name, total_moves, avg_moves, avg_time, total_time, runs)
