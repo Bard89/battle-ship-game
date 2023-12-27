@@ -16,8 +16,7 @@ module ProbabilityDensity
       target = find_gap_between_hits(probability_grid) || find_sequence_to_follow(probability_grid) || highest_probability_cell(probability_grid)
       row, col = target
 
-      puts
-      puts "Targeting Row #{row}, Col #{col}, has the highest probability of #{(probability_grid[row][col] * 100).round(2)}"
+      puts "\nTargeting Row #{row}, Col #{col}, has the highest probability of #{(probability_grid[row][col] * 100).round(2)}"
 
       response = api.fire(row, col)
       update_probability_grid(probability_grid, row, col, response["result"])
