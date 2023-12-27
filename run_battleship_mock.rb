@@ -6,6 +6,9 @@ require_relative 'algos/modified_probability_density/modified_probability_densit
 require_relative 'helpers/algo_helpers.rb'
 require_relative 'constants.rb'
 
+require 'parallel'
+require 'benchmark'
+
 def run_algorithm(algorithm, runs)
   total_moves = 0
   total_time = 0
@@ -57,16 +60,42 @@ def run_algorithm_in_standard_parallel(algorithm, runs)
   [total_moves, average_moves, average_time, total_time]
 end
 
+def run_algorithm_using_gem_parallel(algorithm, runs)
+  results = nil
+  total_benchmark_time = Benchmark.measure do
+    results = Parallel.map(1..runs, in_processes: Parallel.processor_count) do
+      api = BattleshipAPIMock.new
+
+      start_time = Time.now
+      algorithm.call(api)
+      end_time = Time.now
+
+      move_count = api.move_count
+      time = end_time - start_time
+      [move_count, time]
+    end
+  end
+
+  total_moves = results.sum { |result| result[0] }
+  total_time = results.sum { |result| result[1] }
+
+  average_moves = total_moves.to_f / runs
+  average_time = total_time / runs
+
+  [total_moves, average_moves, average_time, total_benchmark_time.real]
+end
+
 
 
 # in the end change this to 200 runs to simulate the real game
-runs = 100
+runs = 200
 
 # total_moves_brute_force, avg_moves_brute_force, time_brute_force, total_time_brute_force = run_algorithm(BruteForce.method(:brute_force), runs)
 # total_moves_hunt_and_target, avg_moves_hunt_and_target, time_hunt_and_target, total_time_hunt_and_target = run_algorithm(HuntAndTarget.method(:hunt_and_target), runs)
 # total_moves_probability_density, avg_moves_probability_density, time_probability_density, total_time_probability_density = run_algorithm(ProbabilityDensity.method(:probability_density), runs)
 total_moves_modified_probability_density, avg_moves_modified_probability_density, time_modified_probability_density, total_time_modified_probability_density = run_algorithm(ModifiedProbabilityDensity.method(:probability_density), runs)
 # total_moves_modified_probability_density, avg_moves_modified_probability_density, time_modified_probability_density, total_time_modified_probability_density = run_algorithm_in_standard_parallel(ModifiedProbabilityDensity.method(:probability_density), runs)
+# total_moves_modified_probability_density, avg_moves_modified_probability_density, time_modified_probability_density, total_time_modified_probability_density = run_algorithm_using_gem_parallel(ModifiedProbabilityDensity.method(:probability_density), runs)
 
 
 # Display stats for each algorithm
