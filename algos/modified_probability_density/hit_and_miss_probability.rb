@@ -20,7 +20,7 @@ module HitAndMissProbability
       update_after_miss(probability_grid, row, col, Constants::REGULAR_SHIP_SHAPES)
     end
   end
-  
+
   def update_after_miss(grid, missed_row, missed_col, ship_shapes)
     ship_shapes.each do |ship_shape|
       Constants::GRID_SIZE.times do |row|

@@ -48,37 +48,26 @@ module ModifiedProbabilityDensity
         target_row, target_col = target_ship(probability_grid_irregular, targeted_cells)
       end
 
-        if targeted_cells.include?([target_row, target_col])
-          raise "Already targeted cell #{target_row}, #{target_col}"
-        end
+        raise "Already targeted cell #{target_row}, #{target_col}" if targeted_cells.include?([target_row, target_col])
 
         targeted_cells.add([target_row, target_col])
-
         result = api.fire(target_row, target_col)
 
-        update_adjacent_cells(probability_grid_irregular, target_row, target_col, result['result'])
-        update_adjacent_cells(probability_grid_regular, target_row, target_col, result['result'])
+        update_probabilities_after_firing(target_row, target_col, result, probability_grid_irregular)
+        update_probabilities_after_firing(target_row, target_col, result, probability_grid_regular)
 
-        update_hit_or_miss_probability(probability_grid_irregular, target_row, target_col, result['result'])
-        update_hit_or_miss_probability(probability_grid_regular, target_row, target_col, result['result'])
-
-        update_ship_sunk_or_not(result, target_row, target_col, probability_grid_irregular)
-        update_ship_sunk_or_not(result, target_row, target_col, probability_grid_regular)
-
-        targeted_cells.add([target_row, target_col])
-
-        purple_bold_start = "\e[1m\e[38;5;198m"
-        purple_bold_end = "\e[0m"
-        puts "#{purple_bold_start}Targeted#{purple_bold_end}"
-        api.print_target_grid(result['grid'], target_row, target_col)
         if api.avengerAvailable
-          puts "Regular ship probability grid:"
-          print_probability_grid(probability_grid_regular)
+          print_target_and_probability_grid(false, probability_grid_irregular, target_row, target_col, result)
         else
-          puts "Irregular ship probability grid:"
-          print_probability_grid(probability_grid_irregular)
+          print_target_and_probability_grid(true, probability_grid_regular, target_row, target_col, result)
         end
     end
+  end
+
+  def update_probabilities_after_firing(target_row, target_col, result, probability_grid)
+    update_adjacent_cells(probability_grid, target_row, target_col, result['result'])
+    update_hit_or_miss_probability(probability_grid, target_row, target_col, result['result'])
+    update_ship_sunk_or_not(probability_grid, target_row, target_col, result['result'])
   end
 
   def target_ship(probability_grid, targeted_cells)
@@ -95,10 +84,7 @@ module ModifiedProbabilityDensity
         end
       end
     end
-
-    if target_position == [-1, -1]
-      raise "No valid target found. All cells may have been targeted."
-    end
+    raise "No valid target found. All cells may have been targeted." if target_position == [-1, -1]
 
     target_position
   end
