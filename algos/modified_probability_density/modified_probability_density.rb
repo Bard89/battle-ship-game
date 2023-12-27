@@ -20,8 +20,7 @@ module ModifiedProbabilityDensity
   module_function
 
   def probability_density(api)
-    @hit_ships = {}
-    @confirmed_sunk_ships = []
+    initialize_ship_tracking
     targeted_cells = Set.new
 
     probability_grid_irregular = create_irregular_ship_probability_grid
@@ -50,6 +49,9 @@ module ModifiedProbabilityDensity
 
         raise "Already targeted cell #{target_row}, #{target_col}" if targeted_cells.include?([target_row, target_col])
 
+        puts "Hit ships:#{@hit_ships}"
+        puts "Confirmed sunk ships:#{@confirmed_sunk_ships}"
+        # sleep(0.3)
         targeted_cells.add([target_row, target_col])
         result = api.fire(target_row, target_col)
 
