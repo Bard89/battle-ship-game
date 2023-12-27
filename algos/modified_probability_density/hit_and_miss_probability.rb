@@ -1,16 +1,6 @@
 require_relative '../../constants.rb'
 
 module HitAndMissProbability
-  def update_probability(probability_grid, row, col, hit)
-    update_adjacent_cells(probability_grid, row, col, hit)
-
-    if hit
-      update_based_on_ship_pattern(probability_grid, row, col)
-    else
-      update_after_miss(probability_grid, row, col, Constants::REGULAR_SHIP_SHAPES)
-    end
-  end
-
   def update_adjacent_cells(probability_grid, row, col, hit)
     (-1..1).each do |row_offset|
       (-1..1).each do |col_offset|
@@ -20,6 +10,14 @@ module HitAndMissProbability
         increment = hit ? Constants::ADJACENT_CELL_PROBABILITY_INCREMENT : -Constants::ADJACENT_CELL_PROBABILITY_DECREMENT
         probability_grid[row + row_offset][col + col_offset] += increment
       end
+    end
+  end
+
+  def update_hit_or_miss_probability(probability_grid, row, col, hit)
+    if hit
+      update_based_on_ship_pattern(probability_grid, row, col)
+    else
+      update_after_miss(probability_grid, row, col, Constants::REGULAR_SHIP_SHAPES)
     end
   end
 

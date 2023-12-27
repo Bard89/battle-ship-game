@@ -153,4 +153,14 @@ module PrintHelpers
       "\e[38;5;196m" # Bright Red (Highest probability)
     end
   end
+
+  def print_target_and_probability_grid(regular, probability_grid, target_row, target_col, result)
+    purple_bold_start = "\e[1m\e[38;5;198m"
+    purple_bold_end = "\e[0m"
+
+    puts "#{purple_bold_start}Targeted#{purple_bold_end}"
+    print_target_grid(result['grid'], target_row, target_col)
+    regular ? (puts "Regular ship probability grid:") : (puts "Irregular ship probability grid:")
+    print_probability_grid(probability_grid)
+  end
 end

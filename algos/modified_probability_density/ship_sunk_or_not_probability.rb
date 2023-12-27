@@ -1,12 +1,13 @@
 require_relative '../../constants.rb'
 
 module ShipSunkOrNotProbability
-  def process_hit_result(result, target_row, target_col, probability_grid_irregular)
-    if result['result']
+  def update_ship_sunk_or_not(probability_grid, target_row, target_col, result)
+    if result
       ship_hits = record_hit(target_row, target_col)
 
-      if ship_sunk?(ship_hits, probability_grid_irregular)
-        update_for_sunk_ship(ship_hits, probability_grid_irregular)
+      if ship_sunk?(ship_hits, probability_grid)
+        update_for_sunk_ship(ship_hits, probability_grid)
+
         @confirmed_sunk_ships.concat(ship_hits)
         @hit_ships.delete(ship_hits.object_id)
       end
