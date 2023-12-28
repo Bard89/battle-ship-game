@@ -55,7 +55,6 @@ module ShipPositionProbability
     end
   end
 
-  # regular ship initial probability grid
   def create_regular_ship_probability_grid
     quarter_grid = create_quarter_grid
     full_grid = reflect_grid(quarter_grid)

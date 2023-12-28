@@ -17,6 +17,7 @@ GEM
     multi_xml (0.6.0)
     parallel (1.24.0)
     rugged (1.7.1)
+    yard (0.9.34)
 
 PLATFORMS
   x86_64-darwin-20
@@ -28,6 +29,7 @@ DEPENDENCIES
   github-linguist (~> 7.28)
   httparty (~> 0.21.0)
   parallel (~> 1.24)
+  yard (~> 0.9.34)
 
 BUNDLED WITH
    2.2.26

@@ -20,8 +20,7 @@ module ModifiedProbabilityDensity
   module_function
 
   def probability_density(api)
-    @hit_ships = {}
-    @confirmed_sunk_ships = []
+    initialize_ship_tracking
     targeted_cells = Set.new
 
     probability_grid_irregular = create_irregular_ship_probability_grid
@@ -50,11 +49,14 @@ module ModifiedProbabilityDensity
 
         raise "Already targeted cell #{target_row}, #{target_col}" if targeted_cells.include?([target_row, target_col])
 
+        puts "Hit ships:#{@hit_ships}"
+        puts "Confirmed sunk ships:#{@confirmed_sunk_ships}"
+        # sleep(0.3)
         targeted_cells.add([target_row, target_col])
         result = api.fire(target_row, target_col)
 
-        update_probabilities_after_firing(target_row, target_col, result, probability_grid_irregular)
-        update_probabilities_after_firing(target_row, target_col, result, probability_grid_regular)
+        update_probabilities_after_firing(target_row, target_col, result, probability_grid_irregular, api)
+        update_probabilities_after_firing(target_row, target_col, result, probability_grid_regular, api)
 
         if api.avengerAvailable
           print_target_and_probability_grid(false, probability_grid_irregular, target_row, target_col, result)
@@ -64,10 +66,10 @@ module ModifiedProbabilityDensity
     end
   end
 
-  def update_probabilities_after_firing(target_row, target_col, result, probability_grid)
+  def update_probabilities_after_firing(target_row, target_col, result, probability_grid, api)
     update_adjacent_cells(probability_grid, target_row, target_col, result['result'])
     update_hit_or_miss_probability(probability_grid, target_row, target_col, result['result'])
-    update_ship_sunk_or_not(probability_grid, target_row, target_col, result['result'])
+    update_ship_sunk_or_not(probability_grid, target_row, target_col, result['result'], api)
   end
 
   def target_ship(probability_grid, targeted_cells)
