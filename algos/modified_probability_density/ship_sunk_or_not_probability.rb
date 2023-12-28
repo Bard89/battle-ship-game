@@ -1,9 +1,7 @@
-# Module ShipSunkOrNotProbability provides functionality to track and update the status of ships
-# in a Battleship game. It includes methods for recording hits on ships, determining if a ship
-# is sunk, and updating probability grids accordingly. This module is essential for managing
-# the state of the game and making informed decisions based on the current situation on the grid.
+# Module ShipSunkOrNotProbability provides functionality to track and update the status of ships.
+# It includes methods for recording hits on ships, determining if a ship
+# is sunk, and updating probability grids accordingly.
 module ShipSunkOrNotProbability
-
   # Initializes tracking structures for hit ships and confirmed sunk ships.
   # @hit_ships stores coordinates of hits with the key being the ship size (or nil if size is unknown).
   # @confirmed_sunk_ships stores coordinates of sunk ships, including special 'irregular' ships.
@@ -19,19 +17,28 @@ module ShipSunkOrNotProbability
   # @param result [Boolean] Indicates if the recent hit was successful.
   # @param api [Object] An object representing the game's API, used to check additional game states.
   def update_ship_sunk_or_not(probability_grid, target_row, target_col, result, api)
-    if result
-      ship_hits, ship_size = record_hit(target_row, target_col)
+    return unless result
 
-      if ship_sunk?(ship_hits, probability_grid)
-        ship_size = ship_size.nil? ? infer_ship_size(ship_hits) : ship_size
-        update_for_sunk_ship(ship_hits, ship_size, probability_grid)
-        @confirmed_sunk_ships[ship_size] = ship_hits
-        @hit_ships.delete(ship_size)
-        puts "Ship sunk: #{ship_size}"
-      end
+    process_avenger_availability(api)
+
+    ship_hits, ship_size = record_hit(target_row, target_col)
+
+    if ship_sunk?(ship_hits, probability_grid)
+      ship_size = ship_size.nil? ? infer_ship_size(ship_hits) : ship_size
+      update_for_sunk_ship(ship_hits, ship_size, probability_grid)
+      @confirmed_sunk_ships[ship_size] = ship_hits
+      @hit_ships.delete(ship_size)
+      puts "Ship sunk: #{ship_size}"
     end
+  end
 
-    process_avenger_availability(api) if api.avengerAvailable
+  # Processes the availability of special abilities when the irregular ship is sunk.
+  # @param api [Object] An object representing the game's API.
+  def process_avenger_availability(api)
+    return if !api.avengerAvailable || @confirmed_sunk_ships['irregular']
+
+    @confirmed_sunk_ships['irregular'] = true
+    @hit_ships.delete('irregular')
   end
 
   # Records a hit at the specified coordinates and associates it with a ship.
@@ -137,13 +144,6 @@ module ShipSunkOrNotProbability
   def update_ship_size(ship_hits, ship_size)
     @hit_ships[ship_size] = ship_hits
     @hit_ships.delete(nil)
-  end
-
-  # Processes the availability of special abilities when the irregular ship is sunk.
-  # @param api [Object] An object representing the game's API.
-  def process_avenger_availability(api)
-    @confirmed_sunk_ships['irregular'] = true if api.avengerAvailable
-    @hit_ships.delete('irregular') if api.avengerAvailable
   end
 
   # Infers the size of a ship based on the pattern of hits.
