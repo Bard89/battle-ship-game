@@ -1,3 +1,5 @@
+# currently not being used, but it represents one of the possible strategies
+# not the most efficient strategy, but easier to understand and implement compared to the probability density strategy
 require_relative '../map_generator.rb'
 require_relative '../helpers/print_helpers.rb'
 require_relative '../constants.rb'

@@ -49,8 +49,8 @@ module ModifiedProbabilityDensity
 
         raise "Already targeted cell #{target_row}, #{target_col}" if targeted_cells.include?([target_row, target_col])
 
-        puts "Hit ships:#{@hit_ships}"
-        puts "Confirmed sunk ships:#{@confirmed_sunk_ships}"
+        puts "Hit ships:#{@partially_sunk_ships}"
+        puts "Confirmed sunk ships:#{@fully_sunk_ships}"
         # sleep(0.3)
         targeted_cells.add([target_row, target_col])
         result = api.fire(target_row, target_col)
@@ -69,7 +69,11 @@ module ModifiedProbabilityDensity
   def update_probabilities_after_firing(target_row, target_col, result, probability_grid, api)
     update_adjacent_cells(probability_grid, target_row, target_col, result['result'])
     update_hit_or_miss_probability(probability_grid, target_row, target_col, result['result'])
-    update_ship_sunk_or_not(probability_grid, target_row, target_col, result['result'], api)
+
+    # the algo works better without the ship sunk or not, but the problem with current algo is that it doesn't know when to stop
+    # shooting around the ship. This was an attempt to solve that. Not fully functional though yet. As of now just making everything worse
+    # uncomment to develop further
+    # update_ship_sunk_or_not(probability_grid, target_row, target_col, result['result'], api)
   end
 
   def target_ship(probability_grid, targeted_cells)
