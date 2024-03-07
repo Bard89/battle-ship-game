@@ -1,3 +1,6 @@
+# theoretically the most efficient strategy to solve the battleship game
+# it's a bit tricky to implement it properly and to set the weights properly
+
 require_relative '../map_generator.rb'
 require_relative '../constants.rb'
 require_relative '../battleship_api_mock.rb'

@@ -1,3 +1,4 @@
+# can serve as a benchmark for the worst case scenario
 require_relative '../map_generator.rb'
 require_relative '../helpers/print_helpers.rb'
 require_relative '../constants.rb'
