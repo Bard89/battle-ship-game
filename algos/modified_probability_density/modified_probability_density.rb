@@ -20,8 +20,8 @@ module ModifiedProbabilityDensity
   module_function
 
   def probability_density(api)
-    initialize_ship_tracking
-    targeted_cells = Set.new
+  initialize_ship_tracking
+  targeted_cells = Set.new
 
     probability_grid_irregular = create_irregular_ship_probability_grid
     probability_grid_regular = create_regular_ship_probability_grid
@@ -40,8 +40,8 @@ module ModifiedProbabilityDensity
       target_row, target_col = nil
 
     # just to optimize the game, to update the probabilities right
-    # until api.avengerAvailable
-      if api.avengerAvailable # if the biggest ship is sunk, use the avenger
+    # until api.avenger_available
+      if api.avenger_available # if the biggest ship is sunk, use the avenger
         target_row, target_col = target_ship(probability_grid_regular, targeted_cells)
       else
         target_row, target_col = target_ship(probability_grid_irregular, targeted_cells)
@@ -58,7 +58,7 @@ module ModifiedProbabilityDensity
         update_probabilities_after_firing(target_row, target_col, result, probability_grid_irregular, api)
         update_probabilities_after_firing(target_row, target_col, result, probability_grid_regular, api)
 
-        if api.avengerAvailable
+        if api.avenger_available
           print_target_and_probability_grid(false, probability_grid_irregular, target_row, target_col, result)
         else
           print_target_and_probability_grid(true, probability_grid_regular, target_row, target_col, result)
@@ -67,7 +67,7 @@ module ModifiedProbabilityDensity
   end
 
   def update_probabilities_after_firing(target_row, target_col, result, probability_grid, api)
-    update_adjacent_cells(probability_grid, target_row, target_col, result['result'])
+    # update_adjacent_cells(probability_grid, target_row, target_col, result['result'])
     update_hit_or_miss_probability(probability_grid, target_row, target_col, result['result'])
 
     # the algo works better without the ship sunk or not, but the problem with current algo is that it doesn't know when to stop

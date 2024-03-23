@@ -18,13 +18,13 @@ class BattleshipAPIMock
   include Constants
   include ModifiedProbabilityDensity
 
-  attr_reader :move_count, :shots, :grid, :avengerAvailable, :irregular_ship_cells
+  attr_reader :move_count, :shots, :grid, :avenger_available, :irregular_ship_cells
 
   def initialize
     @grid = MapGenerator.new.grid
     @shots = Set.new
     @move_count = 0
-    @avengerAvailable = false
+    @avenger_available = false
     @irregular_ship_cells = find_irregular_ship_cells
 
     # unsure what it will return, probably not necessary here, in the real game there is 200 games / maps to play in one go
@@ -47,7 +47,7 @@ class BattleshipAPIMock
       "result" => hit,
       "moveCount" => move_count,
       "finished" => finished?,
-      "avengerAvailable" => avengerAvailable
+      "avenger_available" => avenger_available
     }
 
     ap parsed_response
@@ -83,7 +83,7 @@ class BattleshipAPIMock
 
   def check_irregular_ship_sunk
     if @irregular_ship_cells.all? { |r, c| grid[r][c] == 'X' }
-      @avengerAvailable = true
+      @avenger_available = true
     end
   end
 
