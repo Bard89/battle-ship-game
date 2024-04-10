@@ -95,10 +95,10 @@ def find_gap_between_hits(grid)
       end
     end
   end
-  nil # Return nil if no such pattern is found
+  nil
 end
 
-# part checking for continuous ships and their sizes
+# checking for continuous ships and their sizes
 def find_sequence_to_follow(grid)
   Constants::GRID_SIZE.times do |row|
     Constants::GRID_SIZE.times do |col|
@@ -119,7 +119,7 @@ def find_sequence_to_follow(grid)
       end
     end
   end
-  nil # Return nil if no sequence to follow is found
+  nil
 end
 
 def extend_sequence(grid, sequence, orientation)
@@ -152,7 +152,7 @@ def check_horizontal_sequence(grid, row, col)
     sequence << [row, col]
     col += 1
   end
-  sequence.length > 1 ? sequence : nil # Return sequence if it's longer than 1
+  sequence.length > 1 ? sequence : nil
 end
 
 def check_vertical_sequence(grid, row, col)

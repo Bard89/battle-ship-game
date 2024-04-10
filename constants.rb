@@ -1,5 +1,4 @@
 module Constants
-  # playing field
   GRID_SIZE = 12
 
   REGULAR_SHIPS = [4, 3, 3, 2]
