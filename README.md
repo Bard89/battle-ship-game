@@ -1,9 +1,8 @@
 # The battle ship game
 
-Challenge from https://www.panaxeo.com/coding-arena#api
-Copy of the website of the challenge can be found in CodingArena folder. Read that.
+Challenge from https://www.panaxeo.com/coding-arena#api Might not work anymore, copy of the website of the challenge can be found in CodingArena folder. Read that.
 
-**MOST USEFUL** -> To run the solver just run `ruby run_battleship_mock.rb`
+**MOST USEFUL** -> To run the solver just run `bundle install` and then `ruby run_battleship_mock.rb`
 
 ## Brief Overview
 
@@ -12,13 +11,15 @@ the ships with as few shots as possible.
 
 Not fully implemented spin:
 One of those ships is then irregular and has 4 "chimneys" on both sites of the ship.
-This irregular ship is carrying "avengers" with special abilities tjhat can help you later on in the game. 
+This irregular ship is carrying "avengers" with special abilities that can help you later on in the game. 
+
+<img width="600" alt="image" src="https://github.com/Bard89/battle-ship-game/assets/46139131/e4759f83-608b-4110-b478-731398b0a66b">
+
 
 ## The Solver
 
 The solver is fully functional except for the API and Avengers. Unfortunately the API was disabled before I could
 finish the project. The API calls and responses are not properly documented which prevented me to go further. 
-( see the original copy of the webpage )
 
 To run the solver just run `ruby run_battleship_mock.rb`
 
@@ -34,10 +35,11 @@ To run the solver just run `ruby run_battleship_mock.rb`
    3. `probability_density.rb` approach brings an idea that depending on ship sizes we can assign probabilities to the cells / positions where the ships might be. Then we can periodically update the probabilities after every shot and win the game. This is to my knowledge the best performing algo ( maybe aside from some ML approach ). Read the excellent article -> http://www.datagenetics.com/blog/december32011/index.html .
    4. My approach derives from the supposed use of the avengers. I used modified probability density strategy. Since the avengers are on a big irregular ship and all the other ships are just one line. I used 2 probability fields, one used before the avengers ship is found and the second one after it is found and sunk.
       1. You can see the implemented approaches in `modified_probability_density,rb` in `update_adjacent_cells.rb`, `update_hit_or_miss_probability.rb` and `update_ship_sunk_or_not`.
-      2. Main problem I was facing is that the algo shoots around the ship even when the ship has been sunk. This adds significant overhead and makes the algo underperform. Theoretically the optimum results should be around 12000 per 200 games ( metric defined by the game masters ). What further complicates things is that the game masters decided to not provide a validation whether the ship was sunk or not. In standard battleship game this is available. I attempted to solve this problem with the `ship_sunk_or_not` approach.
+      2. Main problem I was facing is that the algo shoots around the ship even when the ship has been sunk. This adds significant overhead and makes the algo underperform. Theoretically the optimum results should be around 12000 per 200 games ( metric defined by the game masters ). What further complicates things is that the game masters decided to not provide a validation whether the ship was sunk or not. In standard battleship game this is available. I attempted to solve this problem with the `ship_sunk_or_not` approach. <img width="1559" alt="image" src="https://github.com/Bard89/battle-ship-game/assets/46139131/ee6b979f-c0ae-418c-909d-2bc73d27f417">
+
       3. Another problem for the probability algo is that it performs much better when the ships are closer to the center. This migt even be an advantage, depending on how the game masters designed the grid.
       4. Final problem is how to determine how big the constants what modify the probabilities in game should be. See `constatns.rb`
-3. Ideas hot wo further optimize the game.
+3. Ideas how to further optimize the game.
    1. Refactor everything even more to make the code more readable.
    2. Make sensitivity analysis for the constants, to determine their ideal size. This would be done by running sets of simulations with different sized constants in certain size window.
 
@@ -52,12 +54,12 @@ Avengers capabilities ()
 hulk ability will destroy the whole ship if the map point specified by the
 row/column combination at the api endpoint hits the ship
 (all the map points belonging to this ship will be marked as destroyed)
-response ?? NEED TO TRY OUT
+response
 
 **ironman**
 ironman ability will return 1 map point of the smallest non-destroyed ship,
 this map point will be unaffected (the purpose of this ability is to give a hint to the user)
-response ?? NEED TO TRY OUT
+response
 
 **thor**
 thor ability will hit 10 random map points at maximum
