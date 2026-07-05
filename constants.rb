@@ -1,13 +1,11 @@
 module Constants
   GRID_SIZE = 12
 
-  REGULAR_SHIPS = [4, 3, 3, 2]
-  REGULAR_SHIP_SHAPES = [
-    [%w[S S S S]],
-    [%w[S S S]],
-    [%w[S S S]],
-    [%w[S S]]
-  ]
+  # Official fleet per the challenge rules (see the Coding Arena HTML copy):
+  # Avengers Helicarrier (9), Carrier (5), Battleship (4), Destroyer (3),
+  # Submarine (3), Patrol Boat (2) -> 6 ships, 26 ship cells in total.
+  REGULAR_SHIPS = [5, 4, 3, 3, 2]
+  REGULAR_SHIP_SHAPES = REGULAR_SHIPS.map { |size| [Array.new(size, 'S')] }
 
   # the I is better than just S so we can match the ship and return that we have avengers available
   IRREGULAR_SHIP_HORIZONTAL = [
@@ -16,14 +14,18 @@ module Constants
     %w[* I * I *]
   ]
   IRREGULAR_SHIP_VERTICAL = IRREGULAR_SHIP_HORIZONTAL.transpose
+  IRREGULAR_SHIP_SIZE = IRREGULAR_SHIP_HORIZONTAL.flatten.count('I')
+
+  TOTAL_SHIP_CELLS = REGULAR_SHIPS.sum + IRREGULAR_SHIP_SIZE
 
   # game stats
-  CURRENT_BEST_200_GAMES_RUN = 9625 # check periodically on https://www.panaxeo.com/coding-arena#api
+  CURRENT_BEST_200_GAMES_RUN = 9625 # final leaderboard best of the 2023 challenge
 
   # kind of superpowers one can get after sinking the irregular ship
-  AVENGERS = %w[hulk, ironman, thor]
+  AVENGERS = %w[hulk ironman thor]
+  THOR_EXTRA_POINTS = 10 # thor reveals up to 10 random untouched points on top of the fired one
 
-  # probability changes for the probability_density algo
+  # probability changes for the legacy probability_density algos
   IRREGULAR_SHIP_POSITION_PROBABILITY_INCREMENT = 0.2
   REGULAR_SHIP_POSITION_PROBABILITY_INCREMENT = 0.4
 
