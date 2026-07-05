@@ -22,14 +22,14 @@ module ShipSunkOrNotProbability
       update_for_sunk_ship(ship_hits, ship_size, probability_grid)
       @fully_sunk_ships[ship_size] = ship_hits
       @partially_sunk_ships.delete(ship_size)
-      puts "Ship sunk: #{ship_size}"
+      puts "Ship sunk: #{ship_size}" if AlgoHelpers.verbose
     end
 
     process_irregular_ship(api)
   end
 
   def process_irregular_ship(api)
-    return if !api.avengerAvailable || @fully_sunk_ships['irregular']
+    return if !api.avenger_available || @fully_sunk_ships['irregular']
 
     @fully_sunk_ships[9] = true
     @partially_sunk_ships.delete(9)

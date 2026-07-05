@@ -1,6 +1,7 @@
 # can serve as a benchmark for the worst case scenario
 require_relative '../map_generator.rb'
 require_relative '../helpers/print_helpers.rb'
+require_relative '../helpers/algo_helpers.rb'
 require_relative '../constants.rb'
 require_relative '../battleship_api_mock.rb'
 
@@ -16,18 +17,17 @@ module BruteForce
     (0..(Constants::GRID_SIZE - 1)).each do |row|
       (0..(Constants::GRID_SIZE - 1)).each do |column|
         response = api.fire(row, column)
-        puts "Response: #{response}"
 
-        if response["result"]
-          puts "Hit at #{row}, #{column}"
-          api.print_grid(response["grid"])
-        else
-          puts "Miss at #{row}, #{column}"
+        if AlgoHelpers.verbose
+          puts "Response: #{response}"
+          puts response["cell"] == 'X' ? "Hit at #{row}, #{column}" : "Miss at #{row}, #{column}"
         end
 
         if response["finished"]
-          puts "Game over in #{response["moveCount"]} moves"
-          api.print_grid(response["grid"])
+          if AlgoHelpers.verbose
+            puts "Game over in #{response["moveCount"]} moves"
+            api.print_grid(response["grid"])
+          end
           return
         end
       end
