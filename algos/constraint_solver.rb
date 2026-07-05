@@ -35,13 +35,21 @@ module ConstraintSolver
     # :auto prefers ironman over thor when everything still hidden is at most
     # this size (hunting small ships is the expensive part of the endgame)
     attr_accessor :ironman_max_size
+    # nil fires thor as soon as available; a float holds it until a real
+    # hunting lull (no open cluster and best hit probability at or below this).
+    # Benchmarks say: keep nil - early information compounds.
+    attr_accessor :thor_hold_p
     # avenger strategy: :auto, or forced :hulk/:ironman/:thor/:none for benchmarks
     attr_accessor :avenger_strategy
+    # expectimax lookahead for cluster probes (root expectimax, greedy rollouts)
+    attr_accessor :lookahead
 
     def reset_tunables!
-      self.exact_enum_limit = 300_000
+      self.exact_enum_limit = 30_000 # larger buys nothing measurable, only time
       self.ironman_max_size = 3
+      self.thor_hold_p = nil
       self.avenger_strategy = :auto
+      self.lookahead = true
     end
   end
   reset_tunables!
@@ -323,11 +331,12 @@ module ConstraintSolver
 
     # --- probabilities ------------------------------------------------------------------
 
-    # returns {cell_index => P(ship)}; also fills @expected_sizes (avenger logic)
-    # and @target_scores (within-cluster probe ranking)
+    # returns {cell_index => P(ship)}; also fills @expected_sizes (avenger logic),
+    # @target_scores (probe ranking) and @fragment_hypotheses (lookahead)
     def cell_probabilities
       @expected_sizes = {}
       @target_scores = {}
+      @fragment_hypotheses = {}
       placements_by_kind = all_legal_placements
       return {} if placements_by_kind.empty?
 
@@ -369,11 +378,15 @@ module ConstraintSolver
 
         cell_mass = Hash.new(0.0)
         cell_size_mass = Hash.new(0.0)
+        hypothesis_priors = []
+        hypothesis_masks = []
         cand.each do |kind, ps|
           prior = @remaining[kind].to_f
           size = kind == :heli ? Constants::IRREGULAR_SHIP_SIZE : kind
           fragment_load[kind] += prior * ps.size / total_mass
           ps.each do |p|
+            hypothesis_priors << prior
+            hypothesis_masks << p.cells_mask
             p.cells.each do |idx|
               next unless candidates[idx] == 1
 
@@ -382,6 +395,7 @@ module ConstraintSolver
             end
           end
         end
+        @fragment_hypotheses[frag] = [hypothesis_priors, hypothesis_masks]
         cell_mass.each do |idx, mass|
           probability = [mass / total_mass, 1.0].min
           miss_chance[idx] *= 1.0 - probability
@@ -523,14 +537,129 @@ module ConstraintSolver
 
     # --- targeting -----------------------------------------------------------------------
 
-    # marginal turns rank by the identity-resolving heuristic, exact-enumeration
-    # turns (endgame) by the true posterior
+    # marginal turns rank by the identity-resolving heuristic (optionally
+    # improved by expectimax lookahead), exact turns by the true posterior
     def best_target(probabilities)
       raise ContradictionError, 'no target available' if probabilities.empty?
 
+      if ConstraintSolver.lookahead && !@fragment_hypotheses.empty?
+        improved = lookahead_target
+        return improved if improved
+      end
       return @target_scores.max_by { |_, score| score }[0] unless @target_scores.empty?
 
       probabilities.max_by { |_, probability| probability }[0]
+    end
+
+    LOOKAHEAD_MAX_HYPOTHESES = 120
+    LOOKAHEAD_ROOT_CANDIDATES = 10
+
+    # Root expectimax over a cluster's hypothesis set (each hypothesis = one
+    # possible (kind, placement) of the cluster's ship), with greedy rollouts
+    # below the root: pick the probe minimizing the expected number of MISSES
+    # needed to fully resolve the cluster. Probing the highest-probability cell
+    # is not always that probe - sometimes a cheaper cell splits the hypothesis
+    # space so the follow-ups become certain.
+    def lookahead_target
+      best_cell = nil
+      best_gain = 1e-6
+
+      @fragment_hypotheses.each_value do |priors, masks|
+        next if masks.size < 2 || masks.size > LOOKAHEAD_MAX_HYPOTHESES
+
+        @rollout_priors = priors
+        @rollout_masks = masks
+        @rollout_candidates = candidate_mask
+        @rollout_memo = {}
+        all_alive = (1 << masks.size) - 1
+        base_cost = rollout_cost(all_alive, 0)
+
+        union = masks.reduce(0, :|) & @rollout_candidates
+        total_mass = priors.sum
+        cells = mask_to_cells(union)
+        top = cells.sort_by { |u| -hypothesis_mass(all_alive, u) }.first(LOOKAHEAD_ROOT_CANDIDATES)
+
+        top.each do |u|
+          bit = 1 << u
+          hit_alive, miss_alive = split_alive(all_alive, bit)
+          hit_probability = hypothesis_mass(all_alive, u) / total_mass
+          value = 0.0
+          value += hit_probability * rollout_cost(hit_alive, bit) unless hit_alive.zero?
+          value += (1.0 - hit_probability) * (1.0 + rollout_cost(miss_alive, bit)) unless miss_alive.zero?
+          gain = base_cost - value
+          if gain > best_gain
+            best_gain = gain
+            best_cell = u
+          end
+        end
+      end
+
+      best_cell
+    end
+
+    def hypothesis_mass(alive, cell)
+      bit = 1 << cell
+      mass = 0.0
+      each_alive(alive) { |id| mass += @rollout_priors[id] if (@rollout_masks[id] & bit) != 0 }
+      mass
+    end
+
+    def each_alive(alive)
+      id = 0
+      while alive > 0
+        yield id if alive.odd?
+        alive >>= 1
+        id += 1
+      end
+    end
+
+    def split_alive(alive, bit)
+      hit_alive = 0
+      miss_alive = 0
+      each_alive(alive) do |id|
+        if (@rollout_masks[id] & bit).zero?
+          miss_alive |= 1 << id
+        else
+          hit_alive |= 1 << id
+        end
+      end
+      [hit_alive, miss_alive]
+    end
+
+    # expected misses to fully resolve the cluster, following greedy max-mass
+    # probing on the surviving hypotheses
+    def rollout_cost(alive, probed_mask)
+      return 0.0 if alive.zero? || (alive & (alive - 1)).zero? # <= 1 hypothesis: only sure hits remain
+
+      key = [alive, probed_mask]
+      cached = @rollout_memo[key]
+      return cached if cached
+
+      union = 0
+      total_mass = 0.0
+      each_alive(alive) do |id|
+        union |= @rollout_masks[id]
+        total_mass += @rollout_priors[id]
+      end
+
+      best_cell = nil
+      best_mass = -1.0
+      mask_to_cells(union & @rollout_candidates & ~probed_mask).each do |u|
+        mass = hypothesis_mass(alive, u)
+        if mass > best_mass
+          best_mass = mass
+          best_cell = u
+        end
+      end
+      return @rollout_memo[key] = 0.0 if best_cell.nil?
+
+      bit = 1 << best_cell
+      hit_alive, miss_alive = split_alive(alive, bit)
+      hit_probability = best_mass / total_mass
+      cost = 0.0
+      cost += hit_probability * rollout_cost(hit_alive, probed_mask | bit) unless hit_alive.zero?
+      cost += (1.0 - hit_probability) * (1.0 + rollout_cost(miss_alive, probed_mask | bit)) unless miss_alive.zero?
+      @rollout_memo[key] = cost
     end
 
     def pick_avenger_move(probabilities)
@@ -545,20 +674,24 @@ module ConstraintSolver
       end
     end
 
-    # Use the avenger as soon as it is available - holding it never paid off in
-    # benchmarks. Thor's 10 free reveals (hits anchor ships, water prunes
-    # placements) beat hulk's E[size-1] saving; ironman's guaranteed anchor wins
-    # only when everything still hidden is small (hunting smalls costs the most).
+    # Thor's 10 free reveals (hits anchor ships, water prunes placements) beat
+    # hulk's E[size-1] saving; ironman's guaranteed anchor wins only when
+    # everything still hidden is small (hunting smalls costs the most).
     def auto_avenger_move(probabilities)
       hidden_smalls_only = open_evidence_mask.zero? && remaining_kinds.all? do |kind|
         (kind == :heli ? Constants::IRREGULAR_SHIP_SIZE : kind) <= ConstraintSolver.ironman_max_size
       end
 
       if hidden_smalls_only && @ironman_mask.zero?
-        { name: 'ironman', target: best_target(probabilities), reason: 'only hidden small ships left' }
-      else
-        { name: 'thor', target: best_target(probabilities), reason: 'free reveals' }
+        return { name: 'ironman', target: best_target(probabilities), reason: 'only hidden small ships left' }
       end
+
+      hold = ConstraintSolver.thor_hold_p
+      if hold && !(open_evidence_mask.zero? && probabilities.values.max <= hold)
+        return nil # keep holding until a real hunting lull
+      end
+
+      { name: 'thor', target: best_target(probabilities), reason: 'free reveals' }
     end
 
     def log(&block)
