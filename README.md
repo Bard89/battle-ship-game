@@ -3,17 +3,25 @@
 Challenge from https://www.panaxeo.com/coding-arena Might not work anymore, or there migh be a new challenge already. Copy of the website of the challenge can be found in [CodingArena folder](https://github.com/Bard89/battle-ship-game/blob/main/Coding%20Arena%20%E2%80%94%20Boost%20your%20coding%20skill%20and%20win%20cool%20prizes%20%E2%80%94%20Panaxeo%20%E2%80%94%20Crazy%20good%20software%20teams%20(02_12_2023%2023_21_07).html) . Read that.
 
 **MOST USEFUL** -> To run the solver just run `bundle install` and then `ruby run_battleship_mock.rb`
+which plays one game *visually*: you see the generated map, every shot on the board, the live
+probability field and the stats at the end. Pass a game count to switch to the quiet benchmark.
 
 ```
-ruby run_battleship_mock.rb [algo] [runs] [--seed N] [--verbose] [--sequential]
+ruby run_battleship_mock.rb [algo] [runs] [--seed N] [--delay S] [--verbose] [--sequential]
+
+  ruby run_battleship_mock.rb                          # watch the solver play one game
+  ruby run_battleship_mock.rb modified_probability_density --delay 0.5   # watch the old algo, slower
+  ruby run_battleship_mock.rb constraint_solver 200    # quiet benchmark = the challenge score
+  ruby run_battleship_mock.rb all 200                  # compare all algorithms on the same maps
 
   algo       constraint_solver (default), modified_probability_density,
              probability_density, hunt_and_target, brute_force, or all
-  runs       number of games, default 200 (the summed move count of a
-             200-game run IS the challenge score)
+  runs       number of games; omit it to watch one game being played
+             (the summed move count of a 200-game run IS the challenge score)
   --seed N   base seed for the map set (default 42); same seed = same maps,
              so different algorithms compare fairly
-  --verbose  play a single game with all the debug printouts
+  --delay S  seconds between moves in watch mode (default 0.15)
+  --verbose  force watch mode even when a runs count is given (plays 1 game)
 ```
 
 ## Brief Overview

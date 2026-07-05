@@ -1,15 +1,29 @@
-# Benchmark runner for the battleship solvers.
+# Runner for the battleship solvers: watch a game being played, or benchmark.
 #
-#   ruby run_battleship_mock.rb [algo] [runs] [--seed N] [--verbose] [--sequential]
+#   ruby run_battleship_mock.rb [algo] [runs] [--seed N] [--delay S] [--verbose] [--sequential]
+#
+# WATCH MODE (default when no runs count is given): plays ONE game visually -
+# shows the generated map, every shot on the board, the probability field the
+# shot was chosen from, and the stats at the end.
+#
+#   ruby run_battleship_mock.rb                              watch the constraint solver
+#   ruby run_battleship_mock.rb modified_probability_density watch the old algo
+#   ruby run_battleship_mock.rb --delay 0.5 --seed 7         slower, specific map
+#
+# BENCHMARK MODE (a runs count is given): quiet parallel run with stats.
+#
+#   ruby run_battleship_mock.rb constraint_solver 200        the challenge score
+#   ruby run_battleship_mock.rb all 200                      compare all algorithms
 #
 #   algo        constraint_solver (default), modified_probability_density,
 #               probability_density, hunt_and_target, brute_force, or all
-#   runs        number of games, default 200 (the real challenge plays 200 maps;
-#               the summed move count of a 200-game run IS the challenge score)
+#   runs        number of games (the real challenge plays 200 maps; the summed
+#               move count of a 200-game run IS the challenge score)
 #   --seed N    base seed for the map set, default 42; runs with the same seed
 #               and count play identical maps, so algorithms compare fairly
-#   --verbose   play a single game with all debug printouts (forces runs=1)
-#   --sequential  disable parallel processing (parallel is default when quiet)
+#   --delay S   seconds between moves in watch mode, default 0.15
+#   --verbose   force watch mode even when a runs count is given (plays 1 game)
+#   --sequential  disable parallel processing in benchmark mode
 require_relative 'battleship_api_mock.rb'
 require_relative 'algos/brute_force.rb'
 require_relative 'algos/hunt_and_target.rb'
@@ -63,32 +77,42 @@ def display_stats(algo_name, moves, total_time, runs)
   puts format('Time: %.2fs total, %.1fms per game', total_time, total_time / runs * 1000)
 end
 
-USAGE = 'Usage: ruby run_battleship_mock.rb [algo|all] [runs] [--seed N] [--verbose] [--sequential]'.freeze
+USAGE = 'Usage: ruby run_battleship_mock.rb [algo|all] [runs] [--seed N] [--delay S] [--verbose] [--sequential]'.freeze
+
+def take_flag_with_value(args, flag, pattern, error)
+  if (equals_form = args.find { |arg| arg.start_with?("#{flag}=") })
+    args.delete(equals_form)
+    args.push(flag, equals_form.delete_prefix("#{flag}="))
+  end
+  return nil unless (index = args.index(flag))
+
+  value = args[index + 1]
+  abort "#{error}\n#{USAGE}" unless value&.match?(pattern)
+
+  args.slice!(index, 2)
+  value
+end
 
 args = ARGV.dup
 verbose = !args.delete('--verbose').nil?
 sequential = !args.delete('--sequential').nil?
-seed_base = 42 # fixed default so runs are reproducible; pass other seeds for fresh map sets
-if (equals_form = args.find { |arg| arg.start_with?('--seed=') })
-  args.delete(equals_form)
-  args.push('--seed', equals_form.delete_prefix('--seed='))
-end
-if (seed_index = args.index('--seed'))
-  seed_value = args[seed_index + 1]
-  abort "--seed needs an integer value.\n#{USAGE}" unless seed_value&.match?(/\A-?\d+\z/)
-
-  seed_base = Integer(seed_value)
-  args.slice!(seed_index, 2)
-end
+# fixed default seed so runs are reproducible; pass other seeds for fresh map sets
+seed_base = (take_flag_with_value(args, '--seed', /\A-?\d+\z/, '--seed needs an integer value.') || 42).to_i
+delay = take_flag_with_value(args, '--delay', /\A\d+(\.\d+)?\z/, '--delay needs a non-negative number of seconds.')&.to_f
 if (unknown_flag = args.find { |arg| arg.start_with?('--') })
   abort "Unknown option #{unknown_flag}.\n#{USAGE}"
 end
+
 algo_arg = args.find { |arg| !arg.match?(/\A\d+\z/) } || 'constraint_solver'
-runs = (args.find { |arg| arg.match?(/\A\d+\z/) } || 200).to_i
+runs_arg = args.find { |arg| arg.match?(/\A\d+\z/) }
+
+# no runs count = watch mode: one visual game, like the project always played
+watch = verbose || runs_arg.nil?
+runs = watch ? 1 : runs_arg.to_i
 abort "runs must be at least 1.\n#{USAGE}" if runs < 1
-if verbose
+if watch
   AlgoHelpers.verbose = true
-  runs = 1
+  AlgoHelpers.watch_delay = delay || 0.15
   sequential = true
 end
 

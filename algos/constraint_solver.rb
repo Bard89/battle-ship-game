@@ -16,6 +16,7 @@
 # The solver only reads API responses (grid/cell/result/avengerAvailable/
 # avengerResult/finished) - it never touches mock internals.
 require_relative '../helpers/algo_helpers.rb'
+require_relative '../helpers/print_helpers.rb'
 require_relative '../constants.rb'
 
 module ConstraintSolver
@@ -145,6 +146,7 @@ module ConstraintSolver
 
   class Solver
     include ConstraintSolver
+    include PrintHelpers
 
     def initialize(api)
       @api = api
@@ -169,6 +171,7 @@ module ConstraintSolver
         raise ContradictionError, "invalid move: #{response}" if response.key?('error') || response['result'] != true
 
         observe(response)
+        render_move(response, probabilities) if AlgoHelpers.verbose
         return response['moveCount'] if response['finished']
       end
     end
@@ -676,6 +679,21 @@ module ConstraintSolver
 
     def log(&block)
       puts "[solver] #{block.call}" if AlgoHelpers.verbose
+    end
+
+    # watch-mode visuals: the board with the shot highlighted + the probability
+    # field the shot was chosen from
+    def render_move(response, probabilities)
+      row, col = @last_target.divmod(GRID)
+      puts
+      print_target_grid(response['grid'], row, col)
+      probability_grid = Array.new(GRID) do |r|
+        Array.new(GRID) { |c| (probabilities[cell_index(r, c)] || 0.0) * 100.0 }
+      end
+      puts 'Cell probabilities (%):'
+      print_probability_grid(probability_grid)
+      puts "Moves so far: #{response['moveCount']}"
+      AlgoHelpers.watch_pause
     end
   end
 end

@@ -35,6 +35,7 @@ module ProbabilityDensity
         puts
         print_probability_grid(probability_grid)
         puts "move count: #{response["moveCount"]}"
+        AlgoHelpers.watch_pause
       end
     end
   end

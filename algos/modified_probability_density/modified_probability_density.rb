@@ -59,6 +59,7 @@ module ModifiedProbabilityDensity
         else
           print_target_and_probability_grid(true, probability_grid_regular, target_row, target_col, result)
         end
+        AlgoHelpers.watch_pause
       end
     end
   end
