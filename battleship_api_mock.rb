@@ -21,14 +21,20 @@ require 'awesome_print'
 #
 # Assumption (real API is gone, wording ambiguous): the avenger stays available
 # from the helicarrier's destruction until used, rather than expiring after one turn.
+#
+# avengerResult mapPoints follow the documented convention: x is the ROW
+# ("vertical position") and y is the COLUMN, exactly like the /fire/:row/:column
+# path parameters.
 class BattleshipAPIMock
   include AlgoHelpers
   include PrintHelpers
   include Constants
 
-  attr_reader :move_count, :grid, :avenger_available
+  attr_reader :move_count, :avenger_available
   # truth for tests/verification only - algorithms must not read these
-  attr_reader :ships, :revealed
+  # (grid is the unmasked board with S/I ship positions; the API surface is
+  # the masked "grid" string in the responses)
+  attr_reader :grid, :ships, :revealed
 
   def initialize(seed: nil, verbose: false)
     @rng = seed.nil? ? Random.new : Random.new(seed)

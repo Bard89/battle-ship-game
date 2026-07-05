@@ -101,16 +101,16 @@ module ProbabilityDensity
   # shoot the gap when two hits sit one apart in a line (X * X)
   def find_gap_between_hits(grid)
     Constants::GRID_SIZE.times do |row|
-      (Constants::GRID_SIZE - 2).times do |col|
+      Constants::GRID_SIZE.times do |col|
         # Check for horizontal pattern
-        if grid[row][col] == 'X' && grid[row][col + 2] == 'X' && grid[row][col + 1] == '*'
+        if col < Constants::GRID_SIZE - 2 &&
+           grid[row][col] == 'X' && grid[row][col + 2] == 'X' && grid[row][col + 1] == '*'
           return [row, col + 1]
         end
-        # Check for vertical pattern if within grid bounds
-        if row < Constants::GRID_SIZE - 2
-          if grid[row][col] == 'X' && grid[row + 2][col] == 'X' && grid[row + 1][col] == '*'
-            return [row + 1, col]
-          end
+        # Check for vertical pattern
+        if row < Constants::GRID_SIZE - 2 &&
+           grid[row][col] == 'X' && grid[row + 2][col] == 'X' && grid[row + 1][col] == '*'
+          return [row + 1, col]
         end
       end
     end

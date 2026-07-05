@@ -63,16 +63,29 @@ def display_stats(algo_name, moves, total_time, runs)
   puts format('Time: %.2fs total, %.1fms per game', total_time, total_time / runs * 1000)
 end
 
+USAGE = 'Usage: ruby run_battleship_mock.rb [algo|all] [runs] [--seed N] [--verbose] [--sequential]'.freeze
+
 args = ARGV.dup
 verbose = !args.delete('--verbose').nil?
 sequential = !args.delete('--sequential').nil?
-seed_base = 42
+seed_base = 42 # fixed default so runs are reproducible; pass other seeds for fresh map sets
+if (equals_form = args.find { |arg| arg.start_with?('--seed=') })
+  args.delete(equals_form)
+  args.push('--seed', equals_form.delete_prefix('--seed='))
+end
 if (seed_index = args.index('--seed'))
-  seed_base = Integer(args[seed_index + 1])
+  seed_value = args[seed_index + 1]
+  abort "--seed needs an integer value.\n#{USAGE}" unless seed_value&.match?(/\A-?\d+\z/)
+
+  seed_base = Integer(seed_value)
   args.slice!(seed_index, 2)
+end
+if (unknown_flag = args.find { |arg| arg.start_with?('--') })
+  abort "Unknown option #{unknown_flag}.\n#{USAGE}"
 end
 algo_arg = args.find { |arg| !arg.match?(/\A\d+\z/) } || 'constraint_solver'
 runs = (args.find { |arg| arg.match?(/\A\d+\z/) } || 200).to_i
+abort "runs must be at least 1.\n#{USAGE}" if runs < 1
 if verbose
   AlgoHelpers.verbose = true
   runs = 1
@@ -81,7 +94,7 @@ end
 
 selected = algo_arg == 'all' ? ALGORITHMS.keys : [algo_arg]
 unless (unknown = selected - ALGORITHMS.keys).empty?
-  abort "Unknown algorithm #{unknown.first}. Available: #{ALGORITHMS.keys.join(', ')}, all"
+  abort "Unknown algorithm #{unknown.first}. Available: #{ALGORITHMS.keys.join(', ')}, all\n#{USAGE}"
 end
 
 selected.each do |name|

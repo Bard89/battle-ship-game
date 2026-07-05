@@ -19,6 +19,7 @@ require_relative '../helpers/algo_helpers.rb'
 require_relative '../constants.rb'
 
 module ConstraintSolver
+  extend AlgoHelpers
   module_function
 
   GRID = Constants::GRID_SIZE
@@ -60,39 +61,41 @@ module ConstraintSolver
 
   # --- static placement tables ------------------------------------------------
 
-  Placement = Struct.new(:kind, :size, :cells, :cells_mask, :neighbor_mask)
+  Placement = Struct.new(:cells, :cells_mask, :neighbor_mask)
 
   def cell_index(row, col) = row * GRID + col
 
-  def neighbors_mask_of(cells)
+  # 8-neighborhood mask of every cell, precomputed once
+  NEIGHBOR_MASKS = Array.new(CELLS) do |idx|
+    row, col = idx.divmod(GRID)
     mask = 0
-    cells.each do |idx|
-      r, c = idx.divmod(GRID)
-      (-1..1).each do |dr|
-        (-1..1).each do |dc|
-          nr, nc = r + dr, c + dc
-          mask |= 1 << cell_index(nr, nc) if nr.between?(0, GRID - 1) && nc.between?(0, GRID - 1)
-        end
+    (-1..1).each do |dr|
+      (-1..1).each do |dc|
+        mask |= 1 << cell_index(row + dr, col + dc) if valid_coordinates?(row + dr, col + dc)
       end
     end
     mask
+  end.freeze
+
+  def neighbors_mask_of(cells)
+    cells.reduce(0) { |mask, idx| mask | NEIGHBOR_MASKS[idx] }
   end
 
-  def build_placement(kind, size, cells)
+  def build_placement(cells)
     cells_mask = cells.reduce(0) { |m, idx| m | (1 << idx) }
-    Placement.new(kind, size, cells.freeze, cells_mask, neighbors_mask_of(cells) & ~cells_mask).freeze
+    Placement.new(cells.freeze, cells_mask, neighbors_mask_of(cells) & ~cells_mask).freeze
   end
 
   def line_placements(size)
     placements = []
     GRID.times do |r|
       (GRID - size + 1).times do |c|
-        placements << build_placement(size, size, size.times.map { |i| cell_index(r, c + i) })
+        placements << build_placement(size.times.map { |i| cell_index(r, c + i) })
       end
     end
     GRID.times do |c|
       (GRID - size + 1).times do |r|
-        placements << build_placement(size, size, size.times.map { |i| cell_index(r + i, c) })
+        placements << build_placement(size.times.map { |i| cell_index(r + i, c) })
       end
     end
     placements
@@ -109,7 +112,7 @@ module ConstraintSolver
               cells << cell_index(r + dr, c + dc) if cell == 'I'
             end
           end
-          placements << build_placement(:heli, cells.size, cells)
+          placements << build_placement(cells)
         end
       end
     end
@@ -331,10 +334,9 @@ module ConstraintSolver
 
     # --- probabilities ------------------------------------------------------------------
 
-    # returns {cell_index => P(ship)}; also fills @expected_sizes (avenger logic),
-    # @target_scores (probe ranking) and @fragment_hypotheses (lookahead)
+    # returns {cell_index => P(ship)}; also fills @target_scores (probe
+    # ranking) and @fragment_hypotheses (lookahead)
     def cell_probabilities
-      @expected_sizes = {}
       @target_scores = {}
       @fragment_hypotheses = {}
       placements_by_kind = all_legal_placements
@@ -353,8 +355,6 @@ module ConstraintSolver
       candidates = candidate_mask
       frags = fragments
       miss_chance = Hash.new(1.0)
-      size_share = Hash.new(0.0)
-      total_share = Hash.new(0.0)
 
       free_by_kind = {}
       covering = frags.to_h { |frag| [frag, Hash.new { |h, k| h[k] = [] }] }
@@ -377,30 +377,22 @@ module ConstraintSolver
         next if total_mass.zero? # deduce_sunk_ships would have raised; defensive
 
         cell_mass = Hash.new(0.0)
-        cell_size_mass = Hash.new(0.0)
         hypothesis_priors = []
         hypothesis_masks = []
         cand.each do |kind, ps|
           prior = @remaining[kind].to_f
-          size = kind == :heli ? Constants::IRREGULAR_SHIP_SIZE : kind
           fragment_load[kind] += prior * ps.size / total_mass
           ps.each do |p|
             hypothesis_priors << prior
             hypothesis_masks << p.cells_mask
             p.cells.each do |idx|
-              next unless candidates[idx] == 1
-
-              cell_mass[idx] += prior
-              cell_size_mass[idx] += prior * size
+              cell_mass[idx] += prior if candidates[idx] == 1
             end
           end
         end
         @fragment_hypotheses[frag] = [hypothesis_priors, hypothesis_masks]
         cell_mass.each do |idx, mass|
-          probability = [mass / total_mass, 1.0].min
-          miss_chance[idx] *= 1.0 - probability
-          size_share[idx] += cell_size_mass[idx] / total_mass
-          total_share[idx] += probability
+          miss_chance[idx] *= 1.0 - [mass / total_mass, 1.0].min
         end
       end
 
@@ -412,23 +404,18 @@ module ConstraintSolver
         effective_count = @remaining[kind] - fragment_load[kind]
         next if effective_count <= 0
 
-        size = kind == :heli ? Constants::IRREGULAR_SHIP_SIZE : kind
         total = placements.size.to_f
         cell_count = Hash.new(0)
         placements.each do |p|
           p.cells.each { |idx| cell_count[idx] += 1 if candidates[idx] == 1 }
         end
         cell_count.each do |idx, count|
-          miss = (1.0 - count / total)**effective_count
-          miss_chance[idx] *= miss
-          size_share[idx] += (1.0 - miss) * size
-          total_share[idx] += 1.0 - miss
+          miss_chance[idx] *= (1.0 - count / total)**effective_count
         end
       end
 
       probabilities = {}
       miss_chance.each { |idx, miss| probabilities[idx] = 1.0 - miss }
-      total_share.each { |idx, share| @expected_sizes[idx] = size_share[idx] / share if share.positive? }
       @target_scores = ranking_scores(placements_by_kind, open_mask, candidates)
       # an ironman hint is a certain hit
       mask_to_cells(@ironman_mask & candidates).each do |idx|
@@ -487,7 +474,6 @@ module ConstraintSolver
 
       @exact_total = 0
       @exact_cell_counts = Hash.new(0)
-      @exact_size_sums = Hash.new(0.0)
       @dup_start_stack = Array.new(ships.size, 0)
       enumerate_configs(ships, 0, 0, 0, [], open_evidence_mask, union_after)
       return nil if @exact_total.zero? # only possible on inconsistent state; be defensive
@@ -495,10 +481,7 @@ module ConstraintSolver
       candidates = candidate_mask
       probabilities = {}
       @exact_cell_counts.each do |idx, count|
-        next unless candidates[idx] == 1
-
-        probabilities[idx] = count.to_f / @exact_total
-        @expected_sizes[idx] = @exact_size_sums[idx] / count
+        probabilities[idx] = count.to_f / @exact_total if candidates[idx] == 1
       end
       probabilities
     end
@@ -509,10 +492,7 @@ module ConstraintSolver
 
         @exact_total += 1
         chosen.each do |p|
-          p.cells.each do |idx|
-            @exact_cell_counts[idx] += 1
-            @exact_size_sums[idx] += p.size
-          end
+          p.cells.each { |idx| @exact_cell_counts[idx] += 1 }
         end
         return
       end
