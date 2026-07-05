@@ -15,6 +15,14 @@ class BattleshipGame
     self.class.get("/fire/#{row}/#{column}", @options)
   end
 
+  def fire_with_avenger(row, column, avenger)
+    self.class.get("/fire/#{row}/#{column}/avenger/#{avenger}", @options)
+  end
+
+  def status
+    self.class.get('/fire', @options)
+  end
+
   def reset
     self.class.get('/reset', @options)
   end
