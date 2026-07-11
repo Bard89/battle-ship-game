@@ -71,6 +71,10 @@ def display_stats(algo_name, moves, total_time, runs)
               total, average, sorted[runs / 2], sorted.first, sorted.last, Math.sqrt(variance))
   puts format('Score for 200 games: %d (challenge leaderboard best: %d)',
               score200, Constants::CURRENT_BEST_200_GAMES_RUN)
+  if runs < 200
+    puts "  ^ extrapolated from just #{runs} game#{'s' if runs > 1} - single games swing a lot (roughly 29..77 moves);"
+    puts "    run `ruby run_battleship_mock.rb #{algo_name} 200` for the real score"
+  end
   gap = score200 - Constants::CURRENT_BEST_200_GAMES_RUN
   comparison = gap.positive? ? format('%d moves (%.1f%%) above', gap, 100.0 * gap / Constants::CURRENT_BEST_200_GAMES_RUN) : format('%d moves below', -gap)
   puts "That is #{comparison} the all-time leaderboard best."
@@ -96,8 +100,7 @@ end
 args = ARGV.dup
 verbose = !args.delete('--verbose').nil?
 sequential = !args.delete('--sequential').nil?
-# fixed default seed so runs are reproducible; pass other seeds for fresh map sets
-seed_base = (take_flag_with_value(args, '--seed', /\A-?\d+\z/, '--seed needs an integer value.') || 42).to_i
+seed_value = take_flag_with_value(args, '--seed', /\A-?\d+\z/, '--seed needs an integer value.')
 delay = take_flag_with_value(args, '--delay', /\A\d+(\.\d+)?\z/, '--delay needs a non-negative number of seconds.')&.to_f
 if (unknown_flag = args.find { |arg| arg.start_with?('--') })
   abort "Unknown option #{unknown_flag}.\n#{USAGE}"
@@ -110,6 +113,10 @@ runs_arg = args.find { |arg| arg.match?(/\A\d+\z/) }
 watch = verbose || runs_arg.nil?
 runs = watch ? 1 : runs_arg.to_i
 abort "runs must be at least 1.\n#{USAGE}" if runs < 1
+# every invocation plays a fresh random map set; --seed pins it for replays.
+# all algorithms within one invocation share the seed, so comparisons stay fair
+seed_base = seed_value ? seed_value.to_i : rand(1_000_000)
+puts "map seed: #{seed_base}  ( replay these exact maps with --seed #{seed_base} )" if seed_value.nil?
 if watch
   AlgoHelpers.verbose = true
   AlgoHelpers.watch_delay = delay || 0.15

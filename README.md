@@ -18,8 +18,9 @@ ruby run_battleship_mock.rb [algo] [runs] [--seed N] [--delay S] [--verbose] [--
              probability_density, hunt_and_target, brute_force, or all
   runs       number of games; omit it to watch one game being played
              (the summed move count of a 200-game run IS the challenge score)
-  --seed N   base seed for the map set (default 42); same seed = same maps,
-             so different algorithms compare fairly
+  --seed N   every run plays a fresh random map set and prints its seed;
+             pass --seed N to replay exact maps ( within one run all
+             algorithms always share the same maps, so comparisons are fair )
   --delay S  seconds between moves in watch mode (default 0.15)
   --verbose  force watch mode even when a runs count is given (plays 1 game)
 ```
