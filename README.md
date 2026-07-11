@@ -24,6 +24,33 @@ ruby run_battleship_mock.rb [algo] [runs] [--seed N] [--delay S] [--verbose] [--
   --verbose  force watch mode even when a runs count is given (plays 1 game)
 ```
 
+## Version history ( newest first )
+
+### v2 - the constraint solver ( 2026 )
+
+Score: **10,072 ± 20** expected per 200 games ( avg 50.4 moves/game, 43% fewer than v1 ).
+
+[browse the v2 code](https://github.com/Bard89/battle-ship-game/tree/v2) | [everything that changed since v1](https://github.com/Bard89/battle-ship-game/compare/v1...v2)
+
+What changed: the fleet now matches the official rules ( v1 was missing the 5-cell Carrier the
+whole time! ), the mock mirrors the real API faithfully including all three avengers, and a new
+constraint-based solver replaces the hand-tuned probabilities - it enumerates every legal ship
+placement and PROVES when a ship is sunk, the exact thing v1 could not do.
+
+<!-- v2 pics go here -->
+
+### v1 - modified probability density ( 2023 )
+
+Score: ~**17,700** per 200 games ( avg ~88 moves/game measured on the corrected fleet ).
+
+[browse the v1 code](https://github.com/Bard89/battle-ship-game/tree/v1)
+
+The original attempt: two hand-tuned probability fields ( before / after finding the avenger
+ship ). Main unsolved problem: without a sunk confirmation from the game it kept shooting
+around ships that were already dead.
+
+<!-- v1 pics go here -->
+
 ## Brief Overview
 
 It's a battleship game with a spin. We have a 12 X 12 game field with 6 ships. We want to sink all
