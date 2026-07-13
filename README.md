@@ -31,14 +31,14 @@ ruby run_battleship_mock.rb [algo] [runs] [--seed N] [--delay S] [--verbose] [--
 
 Score: **10,072 ± 20** expected per 200 games ( avg 50.4 moves/game, 43% fewer than v1 ).
 
-[browse the v2 code](https://github.com/Bard89/battle-ship-game/tree/v2) | [everything that changed since v1](https://github.com/Bard89/battle-ship-game/compare/v1...v2)
-
 What changed: the fleet now matches the official rules ( v1 was missing the 5-cell Carrier the
-whole time! ), the mock mirrors the real API faithfully including all three avengers, and a new
+whole time), the mock mirrors the real API faithfully including all three avengers, and a new
 constraint-based solver replaces the hand-tuned probabilities - it enumerates every legal ship
 placement and PROVES when a ship is sunk, the exact thing v1 could not do.
 
-<!-- v2 pics go here -->
+<img width="900" alt="watch mode: the constraint solver finishing a map in 42 moves - the board, the live probability field and the stats" src="images/v2-watch-mode.png">
+
+<!-- more v2 pics go here -->
 
 ### v1 - modified probability density ( 2023 )
 
@@ -50,7 +50,9 @@ The original attempt: two hand-tuned probability fields ( before / after finding
 ship ). Main unsolved problem: without a sunk confirmation from the game it kept shooting
 around ships that were already dead.
 
-<!-- v1 pics go here -->
+<img width="900" alt="v1 shooting unnecessarily around an already sunk ship" src="images/v1-modified-probability-density.png">
+
+<!-- more v1 pics go here -->
 
 ## Brief Overview
 
@@ -68,7 +70,7 @@ with special abilities. Destroying it makes ONE avenger ability available (usabl
 - **ironman** reveals (only to you) one cell of the smallest ship still afloat
 - **hulk** destroys the whole ship at the targeted cell if that cell is a hit
 
-<img width="600" alt="image" src="https://github.com/Bard89/battle-ship-game/assets/46139131/e4759f83-608b-4110-b478-731398b0a66b">
+<img width="600" alt="annotated game board: the irregular ship, regular ships and the probability grid" src="images/helicarrier.png">
 
 ## The Solver
 
@@ -138,7 +140,7 @@ plays the cell with the best score. The official no-touch rule does most of the 
    1. The first approach is brute force. This gives us an idea of a worst case algo. `brute_force.rb`
    2. Second approach is a better strategy but still naive one. Called `hunt_and_target.rb`. We basically first try to find the ships by almost randomly shooting in the grid and then sinking them once we found them. This approach is similar to the one we might use as humans playing the game. I call it naive because we do not operate with any probabilities of where the ships might be. And as in life, in battleship game we can only think in probabilities.
    3. `probability_density.rb` approach brings an idea that depending on ship sizes we can assign probabilities to the cells / positions where the ships might be. Then we can periodically update the probabilities after every shot and win the game. Read the excellent article -> http://www.datagenetics.com/blog/december32011/index.html .
-   4. `modified_probability_density` was my hand-tuned attempt at the above with two probability fields (before/after finding the avenger ship). Its main unsolved problem was that it kept shooting around ships that were already sunk, because the game gives no sunk confirmation. <img width="1559" alt="image" src="https://github.com/Bard89/battle-ship-game/assets/46139131/ee6b979f-c0ae-418c-909d-2bc73d27f417">
+   4. `modified_probability_density` was my hand-tuned attempt at the above with two probability fields (before/after finding the avenger ship). Its main unsolved problem was that it kept shooting around ships that were already sunk, because the game gives no sunk confirmation. <img width="1559" alt="v1 shooting unnecessarily around an already sunk ship" src="images/v1-modified-probability-density.png">
    5. `constraint_solver.rb` replaces the hand-tuned probability increments with exact placement
       enumeration and logical deduction (see above). The no-ships-touching rule + placement
       enumeration make "is this ship sunk?" provable in most cases, which was exactly the thing
