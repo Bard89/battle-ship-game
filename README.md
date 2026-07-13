@@ -25,9 +25,53 @@ ruby run_battleship_mock.rb [algo] [runs] [--seed N] [--delay S] [--verbose] [--
   --verbose  force watch mode even when a runs count is given (plays 1 game)
 ```
 
-## Version history ( newest first )
+# v1 - modified probability density ( 2023 )
 
-### v2 - the constraint solver ( 2026 )
+Score: ~**17,700** per 200 games ( avg ~88 moves/game measured on the corrected fleet ).
+
+[browse the v1 code](https://github.com/Bard89/battle-ship-game/tree/v1)
+
+<!-- more v1 pics go here -->
+
+## Brief Overview
+
+It's a battleship game with a spin. We have a 12 X 12 game field with 6 ships. We want to sink all
+the ships with as few shots as possible.
+
+Not fully implemented spin:
+One of those ships is then irregular and has 4 "chimneys" on both sites of the ship.
+This irregular ship is carrying "avengers" with special abilities that can help you later on in the game.
+
+<img width="600" alt="annotated game board: the irregular ship, regular ships and the probability grid" src="images/helicarrier.png">
+
+## The Solver
+
+The solver is fully functional except for the API and Avengers. Unfortunately the API was disabled before I could
+finish the project. The API calls and responses are not properly documented which prevented me to go further.
+
+### The approach to solve the game ( for future me )
+
+1. Create a Mock of the game.
+   1. `battleship_api_mock` To be able to solve the game I had to create a mock fo the game. The API calls were limited to 200 moves a day and to develop and optimize the solver we needed orders of magnitude more.
+   2. `map_generator` -> Generates the map and places all the ships in the grid.
+   3. `run_battleship_mock` -> Runs the mock, is benchmarked and shows the game stats.
+2. Try different algos to solve the game.
+   1. The first approach is brute force. This gives us an idea of a worst case algo. `brute_force.rb`
+   2. Second approach is a better strategy but still naive one. Called `hunt_and_target.rb`. We basically first try to find the ships by almost randomly shooting in the grid and then sinking them once we found them. This approach is similar to the one we might use as humans playing the game. I call it naive because we do not operate with any probabilities of where the ships might be. And as in life, in battleship game we can only think in probabilities.
+   3. `probability_density.rb` approach brings an idea that depending on ship sizes we can assign probabilities to the cells / positions where the ships might be. Then we can periodically update the probabilities after every shot and win the game. Read the excellent article -> http://www.datagenetics.com/blog/december32011/index.html .
+   4. My approach derives from the supposed use of the avengers. I used modified probability density strategy. Since the avengers are on a big irregular ship and all the other ships are just one line. I used 2 probability fields, one used before the avengers ship is found and the second one after it is found and sunk.
+      1. Main problem I was facing is that the algo shoots around the ship even when the ship has been sunk. This adds significant overhead and makes the algo underperform. What further complicates things is that the game masters decided to not provide a validation whether the ship was sunk or not. In standard battleship game this is available. I attempted to solve this problem with the `ship_sunk_or_not` approach. <img width="1559" alt="v1 shooting unnecessarily around an already sunk ship" src="images/v1-modified-probability-density.png">
+      2. Another problem for the probability algo is that it performs much better when the ships are closer to the center. This migt even be an advantage, depending on how the game masters designed the grid.
+      3. Final problem is how to determine how big the constants what modify the probabilities in game should be. See `constants.rb`
+3. Ideas how to further optimize the game.
+   1. Refactor everything even more to make the code more readable.
+   2. Make sensitivity analysis for the constants, to determine their ideal size. This would be done by running sets of simulations with different sized constants in certain size window.
+
+## Did I have fun?
+
+Definitely! Learned a lot I realised how hard is it to manipulates grids even in 2D, and to write these lower level algo from scratch. And no chatGPT is not helpful at all. I guess not enough training data. Oh well maybe next year. ( end of 2023 ).
+
+# v2 - the constraint solver ( 2026 )
 
 Score: **10,072 ± 20** expected per 200 games ( avg 50.4 moves/game, 43% fewer than v1 ).
 
@@ -40,48 +84,28 @@ placement and PROVES when a ship is sunk, the exact thing v1 could not do.
 
 <!-- more v2 pics go here -->
 
-### v1 - modified probability density ( 2023 )
+## The game, corrected
 
-Score: ~**17,700** per 200 games ( avg ~88 moves/game measured on the corrected fleet ).
+The official fleet: Avengers Helicarrier (9 spaces, irregular), Carrier (5), Battleship (4),
+Destroyer (3), Submarine (3) and Patrol Boat (2) -> 6 ships, 26 ship cells in total. Ships never
+touch each other, not even diagonally ( that rule turns out to be the key to solving the game well ).
 
-[browse the v1 code](https://github.com/Bard89/battle-ship-game/tree/v1)
-
-The original attempt: two hand-tuned probability fields ( before / after finding the avenger
-ship ). Main unsolved problem: without a sunk confirmation from the game it kept shooting
-around ships that were already dead.
-
-<img width="900" alt="v1 shooting unnecessarily around an already sunk ship" src="images/v1-modified-probability-density.png">
-
-<!-- more v1 pics go here -->
-
-## Brief Overview
-
-It's a battleship game with a spin. We have a 12 X 12 game field with 6 ships. We want to sink all
-the ships with as few shots as possible. The fleet, per the official rules: Avengers Helicarrier
-(9 spaces, irregular), Carrier (5), Battleship (4), Destroyer (3), Submarine (3) and Patrol Boat (2)
--> 26 ship cells in total. Ships never touch each other, not even diagonally (that rule turns out
-to be the key to solving the game well).
-
-The spin:
-The irregular Helicarrier has 4 "chimneys" on both sides of the ship and is carrying "avengers"
-with special abilities. Destroying it makes ONE avenger ability available (usable once per map):
+Destroying the Helicarrier makes ONE avenger ability available ( usable once per map ):
 
 - **thor** hits the targeted cell plus up to 10 random untouched cells, all in one move
 - **ironman** reveals (only to you) one cell of the smallest ship still afloat
 - **hulk** destroys the whole ship at the targeted cell if that cell is a hit
 
-<img width="600" alt="annotated game board: the irregular ship, regular ships and the probability grid" src="images/helicarrier.png">
+## The faithful mock
 
-## The Solver
+The real API is long gone, so everything runs against `battleship_api_mock.rb`, which now mirrors
+the documented API faithfully: the response grid never leaks unrevealed ships, `result` means
+"the move was valid" while `cell` carries the X/. outcome, repeated shots don't count as moves,
+and all three avenger abilities are implemented (`fire_with_avenger`). One assumption had to be
+made because the API is gone: the avenger stays available from the Helicarrier's destruction
+until used, rather than expiring after one turn.
 
-The real API was disabled before the project was finished, so everything runs against
-`battleship_api_mock.rb`, which now mirrors the documented API faithfully: the response grid never
-leaks unrevealed ships, `result` means "the move was valid" while `cell` carries the X/. outcome,
-repeated shots don't count as moves, and all three avenger abilities are implemented
-(`fire_with_avenger`). One assumption had to be made because the API is gone: the avenger stays
-available from the Helicarrier's destruction until used, rather than expiring after one turn.
-
-### Results (200 games, seed 42, identical maps for every algorithm)
+## Results (200 games, seed 42, identical maps for every algorithm)
 
 | algorithm                      | total moves (=score) | avg moves/game |
 |--------------------------------|---------------------:|---------------:|
@@ -104,7 +128,7 @@ For context, the all-time leaderboard best was **9,625**. Two things about that 
    game does not provide) averages 48.40 -> 9,680 per 200 games. The winner was either very
    lucky, very good, or both. Respect.
 
-### How the constraint solver works (`algos/constraint_solver.rb`)
+## How the constraint solver works (`algos/constraint_solver.rb`)
 
 Every turn it enumerates every legal placement of every remaining ship (as 144-bit masks) and
 plays the cell with the best score. The official no-touch rule does most of the heavy lifting:
@@ -130,37 +154,21 @@ plays the cell with the best score. The official no-touch rule does most of the 
    +0.9 moves/game, hulk is strictly worse); fire **ironman** instead only when everything still
    hidden is small (<= 3 cells), where its guaranteed anchor saves an expensive hunt.
 
-### The approach to solve the game ( for future me )
+## Ideas how to optimize further
 
-1. Create a Mock of the game.
-   1. `battleship_api_mock` To be able to solve the game I had to create a mock fo the game. The API calls were limited to 200 moves a day and to develop and optimize the solver we needed orders of magnitude more.
-   2. `map_generator` -> Generates the map and places all the ships in the grid (seedable, so benchmark runs are reproducible).
-   3. `run_battleship_mock` -> Runs the mock, is benchmarked and shows the game stats.
-2. Try different algos to solve the game.
-   1. The first approach is brute force. This gives us an idea of a worst case algo. `brute_force.rb`
-   2. Second approach is a better strategy but still naive one. Called `hunt_and_target.rb`. We basically first try to find the ships by almost randomly shooting in the grid and then sinking them once we found them. This approach is similar to the one we might use as humans playing the game. I call it naive because we do not operate with any probabilities of where the ships might be. And as in life, in battleship game we can only think in probabilities.
-   3. `probability_density.rb` approach brings an idea that depending on ship sizes we can assign probabilities to the cells / positions where the ships might be. Then we can periodically update the probabilities after every shot and win the game. Read the excellent article -> http://www.datagenetics.com/blog/december32011/index.html .
-   4. `modified_probability_density` was my hand-tuned attempt at the above with two probability fields (before/after finding the avenger ship). Its main unsolved problem was that it kept shooting around ships that were already sunk, because the game gives no sunk confirmation. <img width="1559" alt="v1 shooting unnecessarily around an already sunk ship" src="images/v1-modified-probability-density.png">
-   5. `constraint_solver.rb` replaces the hand-tuned probability increments with exact placement
-      enumeration and logical deduction (see above). The no-ships-touching rule + placement
-      enumeration make "is this ship sunk?" provable in most cases, which was exactly the thing
-      the modified probability density approach was missing.
-3. Ideas how to further optimize the game.
-   1. The remaining gap to a perfect-information player is ~2 moves/game (measured with a
-      sunk-info oracle). Most of it sits in the late hunt for the last small ships.
-   2. Smarter multi-turn planning during hunting (the solver is 1-ply greedy there) might
-      recover a fraction of that, at significant complexity cost.
+1. The remaining gap to a perfect-information player is ~2 moves/game (measured with a
+   sunk-info oracle). Most of it sits in the late hunt for the last small ships.
+2. Smarter multi-turn planning during hunting (the solver is 1-ply greedy there) might
+   recover a fraction of that, at significant complexity cost.
 
-### Did I have fun?
-
-Definitely! Learned a lot I realised how hard is it to manipulates grids even in 2D, and to write these lower level algo from scratch. And no chatGPT is not helpful at all. I guess not enough training data. Oh well maybe next year. ( end of 2023 ).
+## Was it fun this time?
 
 Update ( mid 2026 ): Claude finished the project. The API is long gone, but the mock now matches
 the documented rules (the fleet was even missing the 5-cell Carrier the whole time!), the
 avengers work, and the new solver more than halves the old score. Turns out the training data
 caught up after all.
 
-### The little I managed to pull out of the API before it was shut down.
+# The little I managed to pull out of the API before it was shut down.
 
 Avengers capabilities ()
 **hulk**
