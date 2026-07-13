@@ -163,10 +163,13 @@ plays the cell with the best score. The official no-touch rule does most of the 
 
 ## Was it fun this time?
 
-Update ( mid 2026 ): Claude finished the project. The API is long gone, but the mock now matches
+Update ( mid 2026 ): Claude Fable 5 max was able to finish the project as a first model ever (that I tried). The API is long gone, but the mock now matches
 the documented rules (the fleet was even missing the 5-cell Carrier the whole time!), the
 avengers work, and the new solver more than halves the old score. Turns out the training data
 caught up after all.
+
+
+___
 
 # The little I managed to pull out of the API before it was shut down.
 
