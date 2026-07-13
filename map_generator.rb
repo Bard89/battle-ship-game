@@ -10,7 +10,10 @@ class MapGenerator
 
   attr_reader :grid
 
-  def initialize
+  # rng makes maps reproducible (seeded benchmarks), verbose controls the debug printout
+  def initialize(rng: Random.new, verbose: false)
+    @rng = rng
+    @verbose = verbose
     @grid = Array.new(Constants::GRID_SIZE) { Array.new(Constants::GRID_SIZE, '*') }
     place_ships
   end
@@ -18,16 +21,21 @@ class MapGenerator
   def place_ships
     place_irregular_ship
     place_regular_ships
-    puts "\nFinal grid:"
-    print_grid(@grid.flatten.join(''))
+
+    if @verbose
+      puts "\nFinal grid:"
+      print_grid(@grid.flatten.join(''))
+    end
   end
 
   def place_irregular_ship
     placed = false
 
     until placed
-      row, col = rand(Constants::GRID_SIZE - 2), rand(Constants::GRID_SIZE - 4)
-      ship_shape = [IRREGULAR_SHIP_HORIZONTAL, IRREGULAR_SHIP_VERTICAL].sample
+      ship_shape = [IRREGULAR_SHIP_HORIZONTAL, IRREGULAR_SHIP_VERTICAL].sample(random: @rng)
+      # sample within the bounds of the chosen orientation so every legal position is reachable
+      row = @rng.rand(Constants::GRID_SIZE - ship_shape.length + 1)
+      col = @rng.rand(Constants::GRID_SIZE - ship_shape[0].length + 1)
 
       if can_place_whole_ship?(row, col, ship_shape)
         place_whole_ship(row, col, ship_shape)
@@ -51,7 +59,7 @@ class MapGenerator
       placed = false
 
       until placed
-        row, col, horizontal = rand(Constants::GRID_SIZE), rand(Constants::GRID_SIZE), [true, false].sample
+        row, col, horizontal = @rng.rand(Constants::GRID_SIZE), @rng.rand(Constants::GRID_SIZE), [true, false].sample(random: @rng)
         next unless can_place_regular_ship?(row, col, ship_size, horizontal)
 
         ship_size.times { |i| horizontal ? grid[row][col + i] = 'S' : grid[row + i][col] = 'S' }
