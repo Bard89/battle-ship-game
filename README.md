@@ -80,7 +80,7 @@ whole time), the mock mirrors the real API faithfully including all three avenge
 constraint-based solver replaces the hand-tuned probabilities - it enumerates every legal ship
 placement and PROVES when a ship is sunk, the exact thing v1 could not do.
 
-<img width="900" alt="watch mode: the constraint solver finishing a map in 42 moves - the board, the live probability field and the stats" src="images/v2-watch-mode.png">
+<img width="460" alt="watch mode: the constraint solver finishing a map in 42 moves - the board, the live probability field and the stats" src="images/v2-watch-mode.png">
 
 <!-- more v2 pics go here -->
 
